@@ -2,257 +2,369 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BUMDes MANDIRI - PDF Version</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bengkel Pro v3.8 - Full History & Validated Import</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body { background-color: #f8fafc; padding-bottom: 90px; }
-        .app-card { background: white; border-radius: 12px; padding: 15px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
-        .tab { display: none; }
-        .tab.active { display: block; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #e2e8f0; height: 75px; z-index: 1000; }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #64748b; border: none; background: none; }
-        .nav-item.active { color: #2563eb; }
+        :root { --primary: #2c3e50; --secondary: #34495e; --accent: #e67e22; --success: #27ae60; --danger: #c0392b; --light: #f4f7f6; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--light); color: #333; }
+        header { background: var(--primary); color: white; padding: 1rem; text-align: center; border-bottom: 4px solid var(--accent); }
+        nav { background: var(--secondary); display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 10px; position: sticky; top: 0; z-index: 100; }
+        button { padding: 10px 18px; cursor: pointer; border: none; border-radius: 5px; background: var(--accent); color: white; font-weight: bold; transition: 0.3s; }
+        .container { padding: 20px; max-width: 100%; margin: auto; }
+        .section { display: none; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .active { display: block; }
+        .form-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: var(--secondary); }
+        input, textarea { padding: 10px; border: 1px solid #ccc; border-radius: 5px; width: 100%; box-sizing: border-box; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+        th { background: #f8f9fa; padding: 10px; border: 1px solid #dee2e6; text-align: left; }
+        td { padding: 8px; border: 1px solid #dee2e6; vertical-align: top; }
+        tr:nth-child(even) { background-color: #fcfcfc; }
+        .badge-pol { background: #34495e; color: #f1c40f; padding: 2px 4px; border-radius: 3px; font-weight: bold; font-family: monospace; }
+        .card-report { padding: 20px; border-radius: 8px; color: white; text-align: center; }
+        .bg-in { background: #27ae60; } .bg-out { background: #e74c3c; } .bg-net { background: #2980b9; }
+        #printArea { display: none; }
     </style>
 </head>
 <body>
 
-<div class="p-3">
-    <div class="bg-dark text-white p-4 rounded-4 mb-4 shadow">
-        <h4 class="fw-bold mb-0 text-info">BUMDes MANDIRI</h4>
-        <small id="tgl-info"></small>
-        <hr class="opacity-25">
-        <div class="d-flex justify-content-between text-warning fw-bold">
-            <small>Saldo Bersih:</small>
-            <h5 id="dash-saldo">Rp 0</h5>
+<header class="no-print">
+    <h1 id="dispNama">Bengkel Pro</h1>
+    <p id="dispAlamat">Alamat Bengkel</p>
+</header>
+
+<nav class="no-print">
+    <button onclick="showSection('transaksi')">📝 Kasir Baru</button>
+    <button onclick="showSection('riwayat')">🕒 Riwayat Rinci</button>
+    <button onclick="showSection('pengeluaran')">💸 Pengeluaran</button>
+    <button onclick="showSection('laporan')">📊 Laporan</button>
+    <button onclick="showSection('settings')">⚙️ Pengaturan</button>
+</nav>
+
+<div class="container no-print">
+    <div id="transaksi" class="section active">
+        <h2>Nota Transaksi Baru</h2>
+        <div class="form-group">
+            <div><label>No. Nota</label><input type="text" id="noNota" readonly style="background:#eee"></div>
+            <div><label>Tanggal</label><input type="date" id="tglTrx"></div>
+            <div><label>Customer Nama</label><input type="text" id="custNama"></div>
+            <div><label>No. Polisi</label><input type="text" id="noPol"></div>
+            <div><label>Mobil / KM</label><input type="text" id="mobilKm"></div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Uraian Jasa / Sparepart</th>
+                    <th style="width: 80px;">Qty</th>
+                    <th>Harga Satuan</th>
+                    <th style="width: 150px;">Subtotal</th>
+                    <th style="width: 40px;">#</th>
+                </tr>
+            </thead>
+            <tbody id="inputBody"></tbody>
+        </table>
+        <button onclick="addRow()" style="margin-top:10px; background:#3498db;">+ Tambah Item</button>
+        <div style="margin-top:20px;"><label>Catatan Khusus:</label><textarea id="catatanTrx" rows="2" placeholder="Catatan pekerjaan..."></textarea></div>
+        <div style="text-align:right; font-size:1.5rem; font-weight:bold; margin-top:15px;" id="dispTotal">Total: Rp 0</div>
+        <button onclick="processSaveAndPrint()" style="margin-top:20px; background:var(--success); width: 100%; padding: 15px;">💾 SIMPAN & CETAK RAWBT</button>
+    </div>
+
+    <div id="riwayat" class="section">
+        <h2>Riwayat Pekerjaan Terperinci</h2>
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <input type="text" id="searchFilter" onkeyup="filterRiwayat()" placeholder="Cari Nama, Plat, atau Uraian..." style="flex:1">
+            <input type="date" id="filterTgl" onchange="filterRiwayat()">
+        </div>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Customer</th>
+                        <th>No. Pol</th>
+                        <th>Mobil/KM</th>
+                        <th>Uraian</th>
+                        <th>Qty</th>
+                        <th>Harga</th>
+                        <th>Catatan</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="riwayatBody"></tbody>
+            </table>
         </div>
     </div>
 
-    <div id="tab-kasir" class="tab active">
-        <div class="app-card">
-            <label class="small fw-bold text-muted">PETUGAS ADMIN</label>
-            <input type="text" id="admin" class="form-control mb-2" placeholder="Nama Admin">
-            <div class="row g-2">
-                <div class="col-6">
-                    <label class="small fw-bold text-muted">BERAT (KG)</label>
-                    <input type="number" id="berat" class="form-control" placeholder="0.0" oninput="hitung()">
-                </div>
-                <div class="col-6">
-                    <label class="small fw-bold text-muted">HARGA (RP)</label>
-                    <input type="number" id="harga" class="form-control" placeholder="25000" oninput="hitung()">
-                </div>
-            </div>
+    <div id="pengeluaran" class="section">
+        <h2>Input Pengeluaran</h2>
+        <div class="form-group">
+            <input type="date" id="tglKeluar">
+            <input type="text" id="ketKeluar" placeholder="Keterangan">
+            <input type="number" id="nomKeluar" placeholder="Nominal Rp">
+            <button onclick="addPengeluaran()" style="background:var(--success);">Simpan</button>
         </div>
-        <div class="app-card bg-primary text-white text-center">
-            <small class="opacity-75">TOTAL BAYAR</small>
-            <h2 id="total-display" class="fw-bold">Rp 0</h2>
-        </div>
-        <button onclick="simpanTrx()" class="btn btn-dark w-100 py-3 fw-bold">SIMPAN & DOWNLOAD NOTA (PDF)</button>
+        <table>
+            <tbody id="keluarBody"></tbody>
+        </table>
     </div>
 
-    <div id="tab-biaya" class="tab">
-        <div class="app-card border-start border-danger border-4">
-            <h6 class="fw-bold text-danger">INPUT PENGELUARAN</h6>
-            <input type="text" id="ket-biaya" class="form-control mb-2" placeholder="Keterangan">
-            <input type="number" id="nom-biaya" class="form-control mb-3" placeholder="Nominal Rp">
-            <button onclick="simpanBiaya()" class="btn btn-danger w-100 fw-bold">SIMPAN BIAYA</button>
-        </div>
-        <h6 class="fw-bold small text-muted px-2">DAFTAR BIAYA</h6>
-        <div id="list-biaya-full"></div>
-    </div>
-
-    <div id="tab-riwayat" class="tab">
-        <h6 class="fw-bold small text-muted px-2">RIWAYAT TRANSAKSI (KG & HARGA)</h6>
-        <div id="list-riwayat"></div>
-    </div>
-
-    <div id="tab-laporan" class="tab">
-        <div class="app-card border-top border-dark border-4">
-            <h6 class="fw-bold small">LAPORAN HARIAN</h6>
-            <input type="date" id="tgl-lap" class="form-control mb-2" onchange="updateLaporan()">
-            <div id="res-harian" class="p-2 bg-light rounded small fw-bold mb-2">Pilih Tanggal</div>
-            <button onclick="cetakLaporan('Harian')" class="btn btn-dark btn-sm w-100">SIMPAN LAPORAN PDF</button>
-        </div>
-        <div class="app-card border-top border-primary border-4">
-            <h6 class="fw-bold small text-primary">LAPORAN BULANAN</h6>
-            <input type="month" id="bln-lap" class="form-control mb-2" onchange="updateLaporan()">
-            <div id="res-bulanan" class="p-2 bg-light rounded small fw-bold mb-2 text-primary">Pilih Bulan</div>
-            <button onclick="cetakLaporan('Bulanan')" class="btn btn-primary btn-sm w-100">SIMPAN LAPORAN PDF</button>
+    <div id="laporan" class="section">
+        <h2>Laporan Keuangan</h2>
+        <input type="month" id="filterBulan" onchange="runLaporan()">
+        <div class="form-group" style="margin-top:20px">
+            <div class="card-report bg-in">Pemasukan<br><h3 id="repIn">Rp 0</h3></div>
+            <div class="card-report bg-out">Pengeluaran<br><h3 id="repOut">Rp 0</h3></div>
+            <div class="card-report bg-net">Laba Bersih<br><h3 id="repNet">Rp 0</h3></div>
         </div>
     </div>
 
-    <div id="tab-opsi" class="tab">
-        <div class="app-card">
-            <button onclick="exportExcel()" class="btn btn-success w-100 py-3 fw-bold mb-4">BACKUP KE EXCEL</button>
-            <div class="border-top pt-3">
-                <p class="small fw-bold text-center text-muted">RESTORE DATA</p>
-                <input type="file" id="file-import" class="form-control mb-2">
-                <button onclick="importExcel()" class="btn btn-outline-secondary w-100 btn-sm">PROSES IMPORT</button>
-            </div>
+    <div id="settings" class="section">
+        <h2>Pengaturan Profil & Rekening</h2>
+        <div class="form-group">
+            <div><label>Nama Bengkel</label><input type="text" id="setNama"></div>
+            <div><label>Alamat</label><input type="text" id="setAlamat"></div>
+            <div><label>WA</label><input type="text" id="setWA"></div>
+            <div><label>Rekening</label><input type="text" id="setRek"></div>
+            <div><label>Pemilik (TTD)</label><input type="text" id="setOwner"></div>
         </div>
-        <button onclick="resetData()" class="btn btn-link text-danger w-100 mt-5 opacity-25">Reset Semua Data</button>
+        <button onclick="saveSettings()" style="background:var(--success);">Simpan</button>
+        <hr style="margin:30px 0;">
+        <h3>Manajemen Data (Gunakan File Excel .xlsx)</h3>
+        <div style="display:flex; gap:10px;">
+            <button onclick="exportExcel()" style="background:#2980b9;">📥 Backup ke Excel</button>
+            <input type="file" id="importFile" style="display:none" accept=".xlsx, .xls" onchange="handleImport(event)">
+            <button onclick="document.getElementById('importFile').click()" style="background:#8e44ad;">📤 Import dari Excel</button>
+            <button onclick="resetData()" style="background:var(--danger)">🗑️ Reset Data</button>
+        </div>
     </div>
 </div>
 
-<nav class="bottom-nav shadow-lg">
-    <button class="nav-item active" onclick="nav('kasir', this)">🛒 KASIR</button>
-    <button class="nav-item" onclick="nav('biaya', this)">💸 BIAYA</button>
-    <button class="nav-item" onclick="nav('riwayat', this)">📋 RIWAYAT</button>
-    <button class="nav-item" onclick="nav('laporan', this)">📊 LAPORAN</button>
-    <button class="nav-item" onclick="nav('opsi', this)">⚙️ OPSI</button>
-</nav>
+<div id="printArea"></div>
 
 <script>
-    const { jsPDF } = window.jspdf;
-    let db_trx = JSON.parse(localStorage.getItem('db_final_v21_trx')) || [];
-    let db_biaya = JSON.parse(localStorage.getItem('db_final_v21_biaya')) || [];
-
-    window.onload = () => {
-        document.getElementById('tgl-info').innerText = new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
-        updateDashboard();
-        renderBiaya();
+    const STORAGE_KEY = 'DB_BENGKEL_V3_FINAL_DETAILED';
+    let db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+        config: { name: 'Bengkel Anda', addr: 'Alamat', wa: '08123', rek: '-', owner: 'Owner' },
+        trxs: [], exps: []
     };
 
-    function nav(s, el) {
-        document.querySelectorAll('.tab').forEach(x => x.style.display = 'none');
-        document.getElementById('tab-' + s).style.display = 'block';
-        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-        el.classList.add('active');
-        if(s === 'riwayat') renderRiwayat();
-        if(s === 'biaya') renderBiaya();
+    window.onload = () => { initUI(); refreshUI(); runLaporan(); };
+
+    function initUI() {
+        document.getElementById('dispNama').innerText = db.config.name;
+        document.getElementById('dispAlamat').innerText = db.config.addr;
+        document.getElementById('setNama').value = db.config.name;
+        document.getElementById('setAlamat').value = db.config.addr;
+        document.getElementById('setWA').value = db.config.wa;
+        document.getElementById('setRek').value = db.config.rek;
+        document.getElementById('setOwner').value = db.config.owner;
+        document.getElementById('tglTrx').valueAsDate = new Date();
+        document.getElementById('tglKeluar').valueAsDate = new Date();
+        document.getElementById('filterBulan').value = new Date().toISOString().slice(0, 7);
+        generateNotaOtomatis();
+        if(document.getElementById('inputBody').innerHTML === "") addRow();
     }
 
-    function hitung() {
-        const t = (Number(document.getElementById('berat').value) || 0) * (Number(document.getElementById('harga').value) || 0);
-        document.getElementById('total-display').innerText = "Rp " + t.toLocaleString();
+    function generateNotaOtomatis() {
+        const d = new Date();
+        const prefix = `${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+        const count = db.trxs.filter(t => t.nota.startsWith(prefix)).length;
+        document.getElementById('noNota').value = `${prefix}-${String(count + 1).padStart(4, '0')}`;
     }
 
-    function updateDashboard() {
-        const h = new Date().toISOString().slice(0,10);
-        const o = db_trx.filter(x => x.tgl.startsWith(h)).reduce((a,b) => a + b.total, 0);
-        const b = db_biaya.filter(x => x.tgl.startsWith(h)).reduce((a,b) => a + b.nominal, 0);
-        document.getElementById('dash-saldo').innerText = "Rp " + (o - b).toLocaleString();
+    function addRow() {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td><input type="text" class="i-desc"></td><td><input type="number" class="i-qty" value="1" oninput="calcTotal()"></td><td><input type="number" class="i-prc" value="0" oninput="calcTotal()"></td><td class="i-sub" style="text-align:right">0</td><td><button onclick="this.parentElement.parentElement.remove(); calcTotal()" style="background:red; color:white">X</button></td>`;
+        document.getElementById('inputBody').appendChild(tr);
     }
 
-    // FUNGSI BUAT PDF (PENGGANTI PRINT YANG GAGAL)
-    function buatPDF(judul, isiTeks) {
-        const doc = new jsPDF({ unit: 'mm', format: [80, 150] }); // Ukuran kertas thermal
-        doc.setFont("courier", "bold");
-        doc.text("BUMDes MANDIRI", 40, 10, { align: "center" });
-        doc.setFontSize(10);
-        doc.text(new Date().toLocaleString(), 40, 16, { align: "center" });
-        doc.text("--------------------------", 40, 22, { align: "center" });
-        
-        let y = 30;
-        isiTeks.forEach(line => {
-            doc.text(line, 5, y);
-            y += 7;
+    function calcTotal() {
+        let total = 0;
+        document.querySelectorAll('#inputBody tr').forEach(r => {
+            const q = r.querySelector('.i-qty').value || 0;
+            const p = r.querySelector('.i-prc').value || 0;
+            const sub = q * p;
+            r.querySelector('.i-sub').innerText = sub.toLocaleString('id-ID');
+            total += sub;
         });
-
-        doc.text("--------------------------", 40, y+5, { align: "center" });
-        doc.text("Terima Kasih", 40, y+12, { align: "center" });
-        doc.save(`${judul}.pdf`);
+        document.getElementById('dispTotal').innerText = "Total: Rp " + total.toLocaleString('id-ID');
     }
 
-    function simpanTrx() {
-        const adm = document.getElementById('admin').value || 'Petugas';
-        const kg = Number(document.getElementById('berat').value);
-        const hrg = Number(document.getElementById('harga').value);
-        if(!kg) return alert("Isi Berat!");
-
-        const item = { id: Date.now(), tgl: new Date().toISOString(), adm, kg, hrg, total: kg * hrg };
-        db_trx.push(item);
-        localStorage.setItem('db_final_v21_trx', JSON.stringify(db_trx));
-
-        const rincian = [
-            `Admin  : ${item.adm}`,
-            `Berat  : ${item.kg} Kg`,
-            `Harga  : Rp ${item.hrg.toLocaleString()}`,
-            ` `,
-            `TOTAL  : Rp ${item.total.toLocaleString()}`
-        ];
-        buatPDF("Nota_BUMDes", rincian);
-        
-        document.getElementById('berat').value = ""; hitung(); updateDashboard();
+    function refreshUI() {
+        const rb = document.getElementById('riwayatBody'); rb.innerHTML = '';
+        const sorted = [...db.trxs].sort((a, b) => new Date(b.tgl) - new Date(a.tgl));
+        sorted.forEach(t => {
+            const items = JSON.parse(t.items || "[]");
+            items.forEach((it, idx) => {
+                const tr = document.createElement('tr');
+                if(idx === 0) tr.style.borderTop = "2px solid #2c3e50";
+                tr.innerHTML = `
+                    <td>${idx === 0 ? t.tgl : ''}</td>
+                    <td>${idx === 0 ? t.cust : ''}</td>
+                    <td>${idx === 0 ? `<span class="badge-pol">${t.pol}</span>` : ''}</td>
+                    <td>${idx === 0 ? t.unit : ''}</td>
+                    <td style="background:#fffef0">${it.d}</td>
+                    <td style="text-align:center">${it.q}</td>
+                    <td style="text-align:right">${parseInt(it.p).toLocaleString()}</td>
+                    <td>${idx === 0 ? (t.note || '-') : ''}</td>
+                    <td>${idx === 0 ? `<button onclick="reprint('${t.nota}')" style="background:#27ae60; padding:2px 5px; font-size:10px">Cetak</button>` : ''}</td>
+                `;
+                rb.appendChild(tr);
+            });
+        });
+        const eb = document.getElementById('keluarBody'); eb.innerHTML = '';
+        db.exps.slice().reverse().forEach((e, i) => {
+            eb.innerHTML += `<tr><td>${e.tgl}</td><td>${e.ket}</td><td>${e.nom.toLocaleString()}</td><td><button onclick="delExp(${db.exps.length - 1 - i})" style="background:red; color:white">X</button></td></tr>`;
+        });
     }
 
-    function simpanBiaya() {
-        const ket = document.getElementById('ket-biaya').value;
-        const nom = Number(document.getElementById('nom-biaya').value);
-        if(!nom) return alert("Isi nominal!");
-        db_biaya.push({ id: Date.now(), tgl: new Date().toISOString(), ket, nominal: nom });
-        localStorage.setItem('db_final_v21_biaya', JSON.stringify(db_biaya));
-        document.getElementById('ket-biaya').value = ""; document.getElementById('nom-biaya').value = "";
-        renderBiaya(); updateDashboard();
+    function handleImport(e) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const workbook = XLSX.read(new Uint8Array(ev.target.result), {type: 'array'});
+                const dataTrx = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                
+                // Validasi apakah ini file bengkel atau bukan
+                if (dataTrx.length > 0 && !dataTrx[0].nota && !dataTrx[0].Nota) {
+                    throw new Error("File ini bukan data Bengkel atau format kolom salah.");
+                }
+
+                let imported = 0;
+                dataTrx.forEach(row => {
+                    const clean = { 
+                        nota: row.nota || row.Nota || row["No. Nota"], 
+                        tgl: row.tgl || row.Tanggal, 
+                        cust: row.cust || row.Customer, 
+                        pol: row.pol || row["No. Polisi"], 
+                        unit: row.unit || row["Mobil / KM"], 
+                        note: row.note || row.Catatan, 
+                        total: parseInt(row.total || row.Total || 0), 
+                        items: row.items || "[]" 
+                    };
+                    if(clean.nota && !db.trxs.find(x => x.nota === clean.nota)) {
+                        db.trxs.push(clean);
+                        imported++;
+                    }
+                });
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+                alert(imported > 0 ? `Berhasil mengimpor ${imported} data baru.` : "Tidak ada data baru yang ditambahkan.");
+                location.reload();
+            } catch (err) {
+                alert("Gagal Import: " + err.message);
+            }
+        };
+        reader.readAsArrayBuffer(e.target.files[0]);
     }
 
-    function renderBiaya() {
-        document.getElementById('list-biaya-full').innerHTML = db_biaya.slice().reverse().map(b => `
-            <div class="app-card d-flex justify-content-between py-2 border-end border-danger border-4">
-                <div><b class="small text-uppercase">${b.ket}</b><br><small class="text-muted">${b.tgl.slice(0,10)}</small></div>
-                <b class="text-danger">Rp ${b.nominal.toLocaleString()}</b>
-            </div>`).join('') || '<p class="text-center small py-3">Kosong</p>';
+    function processSaveAndPrint() {
+        const items = [];
+        document.querySelectorAll('#inputBody tr').forEach(r => {
+            const d = r.querySelector('.i-desc').value;
+            const q = r.querySelector('.i-qty').value;
+            const p = r.querySelector('.i-prc').value;
+            if(d) items.push({ d, q, p });
+        });
+        if(items.length === 0) return alert("Isi item!");
+        const nota = {
+            nota: document.getElementById('noNota').value,
+            tgl: document.getElementById('tglTrx').value,
+            cust: document.getElementById('custNama').value,
+            pol: document.getElementById('noPol').value.toUpperCase(),
+            unit: document.getElementById('mobilKm').value,
+            note: document.getElementById('catatanTrx').value,
+            total: items.reduce((a, b) => a + (b.q * b.p), 0),
+            items: JSON.stringify(items)
+        };
+        db.trxs.push(nota);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+        reprint(nota.nota);
+        setTimeout(() => location.reload(), 1200);
     }
 
-    function renderRiwayat() {
-        document.getElementById('list-riwayat').innerHTML = db_trx.slice().reverse().map(x => `
-            <div class="app-card shadow-sm">
-                <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
-                    <div><b class="small text-uppercase">${x.adm}</b><br><small class="text-muted">${x.tgl.replace('T',' ').slice(0,16)}</small></div>
-                    <b class="text-primary">Rp ${x.total.toLocaleString()}</b>
+    function reprint(no) {
+        const t = db.trxs.find(x => x.nota === no);
+        if(!t) return;
+        const items = JSON.parse(t.items);
+        let rows = '';
+        items.forEach(it => {
+            rows += `<tr><td>${it.d}</td><td align="center">${it.q}</td><td align="right">${parseInt(it.p).toLocaleString()}</td><td align="right">${(it.q*it.p).toLocaleString()}</td></tr>`;
+        });
+        const printContent = `
+            <div style="padding:40px; font-family:sans-serif; background:white;">
+                <table width="100%">
+                    <tr>
+                        <td><h1 style="margin:0">${db.config.name}</h1><p style="margin:5px 0">${db.config.addr}</p><p style="margin:0">WA: ${db.config.wa}</p></td>
+                        <td align="right"><h2>INVOICE</h2><p><b>${t.nota}</b></p></td>
+                    </tr>
+                </table>
+                <hr>
+                <p>Pelanggan: ${t.cust} | Nopol: ${t.pol} | Unit: ${t.unit} | Tgl: ${t.tgl}</p>
+                <table width="100%" border="1" style="border-collapse:collapse; margin:20px 0;">
+                    <thead><tr style="background:#eee"><th>Uraian</th><th>Qty</th><th>Harga</th><th>Subtotal</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <p>Catatan: ${t.note || '-'}</p>
+                <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                    <div style="font-size:14px; border:1px dashed #ccc; padding:10px;">
+                        <b>Pembayaran:</b><br>Rekening: ${db.config.rek}
+                    </div>
+                    <div align="right"><h3>TOTAL: Rp ${t.total.toLocaleString()}</h3></div>
                 </div>
-                <div class="d-flex justify-content-between small fw-bold text-secondary">
-                    <span>${x.kg} Kg</span>
-                    <span>@ Rp ${x.hrg.toLocaleString()}</span>
+                <div style="margin-top:50px; display:flex; justify-content:space-between; text-align:center;">
+                    <div width="200">Pelanggan,<br><br><br>( ................. )</div>
+                    <div width="200">Hormat Kami,<br><br><br>( ${db.config.owner} )</div>
                 </div>
-            </div>`).join('') || '<p class="text-center small py-5">Kosong</p>';
+            </div>
+        `;
+        document.getElementById('printArea').innerHTML = printContent;
+        window.location.href = "rawbt:base64," + btoa(unescape(encodeURIComponent(printContent)));
     }
 
-    function updateLaporan() {
-        const d = document.getElementById('tgl-lap').value;
-        const m = document.getElementById('bln-lap').value;
-        if(d) {
-            const o = db_trx.filter(x => x.tgl.startsWith(d)).reduce((a,b)=>a+b.total,0);
-            const b = db_biaya.filter(x => x.tgl.startsWith(d)).reduce((a,b)=>a+b.nominal,0);
-            document.getElementById('res-harian').innerHTML = `Laba: Rp ${(o-b).toLocaleString()}`;
-        }
-        if(m) {
-            const oM = db_trx.filter(x => x.tgl.startsWith(m)).reduce((a,b)=>a+b.total,0);
-            const bM = db_biaya.filter(x => x.tgl.startsWith(m)).reduce((a,b)=>a+b.nominal,0);
-            document.getElementById('res-bulanan').innerHTML = `Laba: Rp ${(oM-bM).toLocaleString()}`;
-        }
+    function saveSettings() {
+        db.config = { name: document.getElementById('setNama').value, addr: document.getElementById('setAlamat').value, wa: document.getElementById('setWA').value, rek: document.getElementById('setRek').value, owner: document.getElementById('setOwner').value };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+        alert("Profil disimpan!");
+        location.reload();
     }
 
-    function cetakLaporan(tipe) {
-        const isi = (tipe === 'Harian') ? document.getElementById('res-harian').innerText : document.getElementById('res-bulanan').innerText;
-        buatPDF("Laporan_"+tipe, [`Laporan ${tipe}`, isi]);
+    function filterRiwayat() {
+        const kw = document.getElementById('searchFilter').value.toLowerCase();
+        const tgl = document.getElementById('filterTgl').value;
+        document.querySelectorAll('#riwayatBody tr').forEach(row => {
+            const txt = row.innerText.toLowerCase();
+            row.style.display = (txt.includes(kw) && (!tgl || txt.includes(tgl))) ? "" : "none";
+        });
+    }
+
+    function runLaporan() {
+        const m = document.getElementById('filterBulan').value;
+        const inc = db.trxs.filter(t => t.tgl.startsWith(m)).reduce((a, b) => a + b.total, 0);
+        const out = db.exps.filter(e => e.tgl.startsWith(m)).reduce((a, b) => a + b.nom, 0);
+        document.getElementById('repIn').innerText = "Rp " + inc.toLocaleString();
+        document.getElementById('repOut').innerText = "Rp " + out.toLocaleString();
+        document.getElementById('repNet').innerText = "Rp " + (inc - out).toLocaleString();
     }
 
     function exportExcel() {
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db_trx), "Transaksi");
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db_biaya), "Biaya");
-        XLSX.writeFile(wb, "Backup_BUMDes.xlsx");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.trxs), "DataTransaksi");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.exps), "DataPengeluaran");
+        XLSX.writeFile(wb, "Backup_Bengkel_Pro.xlsx");
     }
 
-    function importExcel() {
-        const f = document.getElementById('file-import').files[0];
-        if(!f) return alert("Pilih file!");
-        const r = new FileReader();
-        r.onload = (e) => {
-            const wb = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
-            db_trx = XLSX.utils.sheet_to_json(wb.Sheets.Transaksi) || [];
-            db_biaya = XLSX.utils.sheet_to_json(wb.Sheets.Biaya) || [];
-            localStorage.setItem('db_final_v21_trx', JSON.stringify(db_trx));
-            localStorage.setItem('db_final_v21_biaya', JSON.stringify(db_biaya));
-            alert("Berhasil!"); location.reload();
-        };
-        r.readAsArrayBuffer(f);
+    function addPengeluaran() {
+        const p = { tgl: document.getElementById('tglKeluar').value, ket: document.getElementById('ketKeluar').value, nom: parseInt(document.getElementById('nomKeluar').value || 0) };
+        if(p.ket) { db.exps.push(p); localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); location.reload(); }
     }
 
+    function delExp(i) { db.exps.splice(i, 1); localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); location.reload(); }
     function resetData() { if(confirm("Hapus semua?")) { localStorage.clear(); location.reload(); } }
+    function showSection(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
 </script>
 </body>
 </html>
