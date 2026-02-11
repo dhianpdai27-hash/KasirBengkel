@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Bengkel Pro v7 - Print Optimized</title>
+    <title>Sistem Bengkel Pro v7 - Nota Serial Version</title>
     <style>
         :root { --primary: #007bff; --secondary: #6c757d; --success: #28a745; --danger: #dc3545; --warning: #ffc107; }
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0 0 80px 0; background-color: #f0f2f5; color: #333; }
@@ -34,34 +34,20 @@
         .btn-red { background: var(--danger); }
         .btn-orange { background: var(--warning); color: #333; }
 
-        /* AREA CETAK OPTIMASI A5/A4 */
-        .print-area { 
-            border: 1px solid #000; 
-            padding: 20px; 
-            background: #fff; 
-            margin-top: 20px; 
-            color: #000; 
-            max-width: 100%;
-            box-sizing: border-box;
-        }
+        /* AREA CETAK */
+        .print-area { border: 1px solid #000; padding: 20px; background: #fff; margin-top: 20px; color: #000; max-width: 100%; box-sizing: border-box; }
         .queue-badge { background: #fff9e6; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--warning); border-left: 5px solid var(--warning); }
         .detail-row { background: #fdfdfd; display: none; }
         .detail-box { padding: 15px; border: 1px dashed #bbb; margin: 5px; background: #fff; border-radius: 8px; }
         .badge-jasa { color: #17a2b8; font-weight: bold; }
         .badge-part { color: #6f42c1; font-weight: bold; }
 
-        /* KHUSUS PRINT */
         @media print {
             @page { size: portrait; margin: 0.5cm; }
             .no-print, .bottom-nav { display: none !important; }
             body { padding: 0; margin: 0; background: #fff; }
             .container { max-width: 100%; border: none; box-shadow: none; margin: 0; padding: 0; }
-            .print-area { 
-                border: none; 
-                padding: 0; 
-                width: 14.8cm; /* Lebar A5 agar tidak meluber di A4 Potrait */
-                font-size: 12px; 
-            }
+            .print-area { border: none; padding: 0; width: 14.8cm; font-size: 12px; }
             table { font-size: 11px; }
             th, td { padding: 6px; }
         }
@@ -74,7 +60,7 @@
 
     <div id="tab-input" class="section active">
         <div class="no-print">
-            <h3>Input Transaksi</h3>
+            <h3>Input Transaksi <span id="nextNotaLabel" style="float:right; font-size:14px; color:var(--secondary)">No Nota: ...</span></h3>
             <div id="queue-list"></div>
             <div class="grid-2">
                 <div class="form-group"><label>Nama Pelanggan:</label><input type="text" id="custName"></div>
@@ -122,6 +108,7 @@
                 </div>
                 <div style="text-align: right; width: 35%;">
                     <h3 id="p-tipe" style="margin:0; border:none; text-decoration: underline; color:#000;">NOTA</h3>
+                    <div id="p-noNota" style="font-weight: bold; font-size: 12px;">No: -</div>
                     <div id="p-tgl" style="font-size: 11px;">Tgl: -</div>
                 </div>
             </div>
@@ -177,10 +164,10 @@
 
     <div id="tab-riwayat" class="section">
         <h3>Riwayat Pekerjaan</h3>
-        <input type="text" id="search" placeholder="Cari Pelanggan/Unit..." onkeyup="loadRiwayat()" style="margin-bottom:15px">
+        <input type="text" id="search" placeholder="Cari Pelanggan/Unit/No Nota..." onkeyup="loadRiwayat()" style="margin-bottom:15px">
         <div style="overflow-x: auto;">
             <table>
-                <thead><tr><th style="width:30px"></th><th>Tgl</th><th>Nama</th><th>Unit</th><th>KM</th><th>Total</th><th>Aksi</th></tr></thead>
+                <thead><tr><th style="width:30px"></th><th>No Nota</th><th>Tgl</th><th>Nama</th><th>Unit</th><th>Total</th><th>Aksi</th></tr></thead>
                 <tbody id="historyList"></tbody>
             </table>
         </div>
@@ -228,12 +215,27 @@
     let db_history = JSON.parse(localStorage.getItem('b_history_v6') || "[]");
     let db_biaya = JSON.parse(localStorage.getItem('b_biaya_v6') || "[]");
     let db_queue = JSON.parse(localStorage.getItem('b_queue_v6') || "[]");
+    let last_serial = parseInt(localStorage.getItem('b_serial_v6') || "0");
+
+    // LOGIKA NOMOR NOTA OTOMATIS
+    function getNextNota() {
+        const d = new Date();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        const serial = String(last_serial + 1).padStart(4, '0');
+        return `DK${mm}${yyyy}-${serial}`;
+    }
+
+    function updateNotaLabel() {
+        document.getElementById('nextNotaLabel').innerText = "No Nota: " + getNextNota();
+    }
 
     function openTab(evt, tabName) {
         document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
         document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
         document.getElementById(tabName).classList.add("active");
         if(evt) evt.currentTarget.classList.add("active");
+        if(tabName === 'tab-input') updateNotaLabel();
     }
 
     function addRow() {
@@ -259,13 +261,17 @@
 
     function saveToQueue() {
         let d = getFormData(); if(!d.nama) return alert("Nama Kosong!");
-        db_queue.push(d); localStorage.setItem('b_queue_v6', JSON.stringify(db_queue));
-        resetForm(); loadQueue(); alert("Berhasil simpan ke antrean");
+        d.noNota = getNextNota(); // Assign no nota
+        db_queue.push(d); 
+        last_serial++; // Increment serial
+        localStorage.setItem('b_serial_v6', last_serial);
+        localStorage.setItem('b_queue_v6', JSON.stringify(db_queue));
+        resetForm(); loadQueue(); updateNotaLabel(); alert("Berhasil simpan ke antrean");
     }
 
     function loadQueue() {
         let h = ""; db_queue.forEach((q, i) => {
-            h += `<div class="queue-badge"><span><strong>${q.nama}</strong> (${q.unit})</span>
+            h += `<div class="queue-badge"><span><strong>${q.noNota}</strong> - ${q.nama} (${q.unit})</span>
             <div><button class="btn btn-blue" onclick="editQueue(${i})">Buka</button><button class="btn btn-red" onclick="delQueue(${i})">X</button></div></div>`;
         });
         document.getElementById('queue-list').innerHTML = h;
@@ -297,6 +303,7 @@
             if(d) { its.push({cat:c, d:d, q:q, p:p}); if(c === 'Jasa') sj += (q*p); else sp += (q*p); }
         });
         return {
+            noNota: getNextNota(),
             nama: document.getElementById('custName').value, unit: document.getElementById('carInfo').value,
             km: document.getElementById('km').value, mekanik: document.getElementById('mekanikName').value,
             catatan: document.getElementById('catatan').value, items: its, subJasa: sj, subPart: sp, total: sj + sp,
@@ -308,6 +315,7 @@
         let d = getFormData(); if(!d.nama) return alert("Nama Pelanggan Kosong!");
         document.getElementById('printOutput').style.display = 'block';
         document.getElementById('p-tipe').innerText = tipe.toUpperCase();
+        document.getElementById('p-noNota').innerText = "No: " + d.noNota;
         document.getElementById('p-cust').innerText = d.nama;
         document.getElementById('p-unit').innerText = d.unit;
         document.getElementById('p-km').innerText = d.km;
@@ -324,8 +332,11 @@
         document.getElementById('p-total').innerText = d.total.toLocaleString();
 
         if(save) {
-            db_history.push(d); localStorage.setItem('b_history_v6', JSON.stringify(db_history));
-            setTimeout(() => { window.print(); if(confirm("Selesai Cetak? Kosongkan Form?")) resetForm(); }, 500);
+            db_history.push(d); 
+            last_serial++; // Increment serial
+            localStorage.setItem('b_serial_v6', last_serial);
+            localStorage.setItem('b_history_v6', JSON.stringify(db_history));
+            setTimeout(() => { window.print(); if(confirm("Selesai Cetak? Kosongkan Form?")) resetForm(); updateNotaLabel(); }, 500);
         } else {
             setTimeout(() => { window.print(); }, 500);
         }
@@ -338,11 +349,12 @@
         document.getElementById('mekanikName').value = "";
         document.querySelector("#itemTable tbody").innerHTML = `<tr><td><select class="item-cat"><option value="Jasa">Jasa</option><option value="Part">Part</option></select></td><td><input type="text" class="item-desc"></td><td><input type="number" class="item-qty" oninput="calculate()"></td><td><input type="number" class="item-price" oninput="calculate()"></td><td class="item-sub">0</td><td>-</td></tr>`;
         document.getElementById('printOutput').style.display = 'none';
+        updateNotaLabel();
     }
 
     function updateWO() {
         let d = getFormData();
-        let h = `<strong>Unit:</strong> ${d.unit} | <strong>Mekanik:</strong> ${d.mekanik}<hr><ul>`;
+        let h = `<strong>No Nota:</strong> ${d.noNota} | <strong>Unit:</strong> ${d.unit}<br><strong>Mekanik:</strong> ${d.mekanik}<hr><ul>`;
         d.items.forEach(i => { h += `<li>[ ] ${i.d} (${i.q})</li>`; });
         h += `</ul><strong>Cat:</strong> ${d.catatan}`;
         document.getElementById('wo-content').innerHTML = h;
@@ -352,10 +364,10 @@
         let s = document.getElementById('search').value.toLowerCase(); let htl = "";
         [...db_history].reverse().forEach((h, i) => {
             let idx = db_history.length - 1 - i;
-            if(h.nama.toLowerCase().includes(s) || h.unit.toLowerCase().includes(s)) {
+            if(h.nama.toLowerCase().includes(s) || h.unit.toLowerCase().includes(s) || h.noNota.toLowerCase().includes(s)) {
                 let det = h.items.map(it => `<div>• <span class="${it.cat=='Jasa'?'badge-jasa':'badge-part'}">[${it.cat}]</span> ${it.d} (${it.q}x${it.p.toLocaleString()})</div>`).join("");
                 htl += `<tr onclick="toggleDetail(${idx})" style="cursor:pointer">
-                <td style="color:var(--primary); font-weight:bold;">+</td><td>${h.tgl}</td><td>${h.nama}</td><td>${h.unit}</td><td>${h.km}</td><td>${h.total.toLocaleString()}</td>
+                <td style="color:var(--primary); font-weight:bold;">+</td><td>${h.noNota}</td><td>${h.tgl}</td><td>${h.nama}</td><td>${h.unit}</td><td>${h.total.toLocaleString()}</td>
                 <td><button class="btn-red" style="padding:4px" onclick="event.stopPropagation(); delHistory(${idx})">Del</button></td></tr>
                 <tr id="det-${idx}" class="detail-row"><td colspan="7"><div class="detail-box">
                 <strong>Mekanik:</strong> ${h.mekanik}<br><strong>Detail:</strong>${det}<br><i>Cat: ${h.catatan}</i></div></td></tr>`;
@@ -435,7 +447,7 @@
 
     function resetData() { if(confirm("Reset semua data?")) { localStorage.clear(); location.reload(); } }
 
-    window.onload = () => { loadSettings(); loadQueue(); };
+    window.onload = () => { loadSettings(); loadQueue(); updateNotaLabel(); };
 </script>
 </body>
 </html>
