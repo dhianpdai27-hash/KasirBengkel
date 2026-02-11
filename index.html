@@ -3,358 +3,439 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bengkel Pro v3.9 - Bottom Nav Edition</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <title>Sistem Bengkel Pro v7 - Print Optimized</title>
     <style>
-        :root { --primary: #2c3e50; --secondary: #34495e; --accent: #e67e22; --success: #27ae60; --danger: #c0392b; --light: #f4f7f6; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--light); color: #333; padding-bottom: 70px; } /* Padding bawah untuk menu */
+        :root { --primary: #007bff; --secondary: #6c757d; --success: #28a745; --danger: #dc3545; --warning: #ffc107; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0 0 80px 0; background-color: #f0f2f5; color: #333; }
+        .container { max-width: 1000px; margin: 20px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* Header Tetap di Atas */
-        header { background: var(--primary); color: white; padding: 15px; text-align: center; border-bottom: 3px solid var(--accent); }
-        header h1 { margin: 0; font-size: 1.5rem; }
-        header p { margin: 5px 0 0; font-size: 0.9rem; opacity: 0.8; }
+        /* Navigasi */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 2px solid var(--primary); box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; }
+        .nav-item { border: none; background: none; color: var(--secondary); font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; font-weight: bold; width: 16%; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item svg { width: 22px; height: 22px; margin-bottom: 4px; }
 
-        /* MENU DASHBOARD DI BAWAH (Bottom Navigation) */
-        nav.bottom-nav { 
-            position: fixed; bottom: 0; left: 0; right: 0; 
-            background: white; display: flex; justify-content: space-around; 
-            padding: 10px 0; border-top: 1px solid #ddd; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            z-index: 1000;
+        .section { display: none; }
+        .section.active { display: block; }
+        
+        h2, h3 { color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 5px; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #f8f9fa; color: var(--primary); }
+
+        .btn { padding: 10px 15px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; margin: 2px; }
+        .btn-blue { background: var(--primary); }
+        .btn-green { background: var(--success); }
+        .btn-red { background: var(--danger); }
+        .btn-orange { background: var(--warning); color: #333; }
+
+        /* AREA CETAK OPTIMASI A5/A4 */
+        .print-area { 
+            border: 1px solid #000; 
+            padding: 20px; 
+            background: #fff; 
+            margin-top: 20px; 
+            color: #000; 
+            max-width: 100%;
+            box-sizing: border-box;
         }
-        .nav-item { 
-            background: none; border: none; color: #7f8c8d; cursor: pointer;
-            display: flex; flex-direction: column; align-items: center; font-size: 10px; font-weight: bold;
+        .queue-badge { background: #fff9e6; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--warning); border-left: 5px solid var(--warning); }
+        .detail-row { background: #fdfdfd; display: none; }
+        .detail-box { padding: 15px; border: 1px dashed #bbb; margin: 5px; background: #fff; border-radius: 8px; }
+        .badge-jasa { color: #17a2b8; font-weight: bold; }
+        .badge-part { color: #6f42c1; font-weight: bold; }
+
+        /* KHUSUS PRINT */
+        @media print {
+            @page { size: portrait; margin: 0.5cm; }
+            .no-print, .bottom-nav { display: none !important; }
+            body { padding: 0; margin: 0; background: #fff; }
+            .container { max-width: 100%; border: none; box-shadow: none; margin: 0; padding: 0; }
+            .print-area { 
+                border: none; 
+                padding: 0; 
+                width: 14.8cm; /* Lebar A5 agar tidak meluber di A4 Potrait */
+                font-size: 12px; 
+            }
+            table { font-size: 11px; }
+            th, td { padding: 6px; }
         }
-        .nav-item.active { color: var(--accent); }
-        .nav-icon { font-size: 20px; margin-bottom: 2px; }
-
-        /* Container & Section */
-        .container { padding: 15px; max-width: 100%; margin: auto; }
-        .section { display: none; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .active-section { display: block; }
-
-        /* Form & Tabel */
-        .form-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        label { display: block; font-size: 11px; font-weight: bold; margin-bottom: 3px; color: var(--secondary); }
-        input, textarea { padding: 10px; border: 1px solid #ccc; border-radius: 5px; width: 100%; box-sizing: border-box; font-size: 14px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-        th { background: #f8f9fa; padding: 10px; border: 1px solid #dee2e6; text-align: left; }
-        td { padding: 8px; border: 1px solid #dee2e6; vertical-align: top; }
-        tr:nth-child(even) { background-color: #fcfcfc; }
-        
-        .badge-pol { background: #34495e; color: #f1c40f; padding: 2px 4px; border-radius: 3px; font-weight: bold; font-family: monospace; }
-        .total-banner { background: #eee; padding: 15px; border-radius: 5px; text-align: right; font-size: 1.2rem; font-weight: bold; margin-top: 10px; }
-        
-        /* Card Laporan */
-        .card-report { padding: 15px; border-radius: 8px; color: white; text-align: center; margin-bottom: 10px; }
-        .bg-in { background: var(--success); } .bg-out { background: var(--danger); } .bg-net { background: #2980b9; }
-
-        @media print { .no-print { display: none !important; } #printArea { display: block !important; } body { padding: 0; } }
-        #printArea { display: none; }
     </style>
 </head>
 <body>
 
-<header class="no-print">
-    <h1 id="dispNama">Bengkel Pro</h1>
-    <p id="dispAlamat">Alamat Bengkel</p>
-</header>
+<div class="container">
+    <h2 id="displayNamaBengkel" style="text-align: center;">Bengkel Pro</h2>
 
-<nav class="bottom-nav no-print">
-    <button class="nav-item active" id="btn-trx" onclick="showSection('transaksi', 'btn-trx')">
-        <span class="nav-icon">📝</span> Kasir
-    </button>
-    <button class="nav-item" id="btn-riwayat" onclick="showSection('riwayat', 'btn-riwayat')">
-        <span class="nav-icon">🕒</span> Riwayat
-    </button>
-    <button class="nav-item" id="btn-exp" onclick="showSection('pengeluaran', 'btn-exp')">
-        <span class="nav-icon">💸</span> Biaya
-    </button>
-    <button class="nav-item" id="btn-lap" onclick="showSection('laporan', 'btn-lap')">
-        <span class="nav-icon">📊</span> Laporan
-    </button>
-    <button class="nav-item" id="btn-set" onclick="showSection('settings', 'btn-set')">
-        <span class="nav-icon">⚙️</span> Set
-    </button>
-</nav>
-
-<div class="container no-print">
-    <div id="transaksi" class="section active-section">
-        <div class="form-group">
-            <div><label>Nota</label><input type="text" id="noNota" readonly style="background:#eee"></div>
-            <div><label>Tanggal</label><input type="date" id="tglTrx"></div>
-            <div><label>Customer</label><input type="text" id="custNama"></div>
-            <div><label>No. Pol</label><input type="text" id="noPol"></div>
-            <div><label>Unit/KM</label><input type="text" id="mobilKm"></div>
-        </div>
-        <div style="overflow-x: auto;">
-            <table id="tableInput">
+    <div id="tab-input" class="section active">
+        <div class="no-print">
+            <h3>Input Transaksi</h3>
+            <div id="queue-list"></div>
+            <div class="grid-2">
+                <div class="form-group"><label>Nama Pelanggan:</label><input type="text" id="custName"></div>
+                <div class="form-group"><label>Nopol / Merk Mobil:</label><input type="text" id="carInfo"></div>
+                <div class="form-group"><label>Kilometer:</label><input type="number" id="km"></div>
+                <div class="form-group"><label>Nama Mekanik:</label><input type="text" id="mekanikName"></div>
+            </div>
+            <table id="itemTable">
                 <thead>
-                    <tr><th>Uraian</th><th width="60">Qty</th><th>Harga</th><th width="40">#</th></tr>
+                    <tr>
+                        <th style="width:100px">Kat.</th>
+                        <th>Uraian</th>
+                        <th style="width:60px">Qty</th>
+                        <th style="width:100px">Harga</th>
+                        <th style="width:100px">Subtotal</th>
+                        <th style="width:40px">Aksi</th>
+                    </tr>
                 </thead>
-                <tbody id="inputBody"></tbody>
+                <tbody>
+                    <tr>
+                        <td><select class="item-cat"><option value="Jasa">Jasa</option><option value="Part">Part</option></select></td>
+                        <td><input type="text" class="item-desc"></td>
+                        <td><input type="number" class="item-qty" oninput="calculate()"></td>
+                        <td><input type="number" class="item-price" oninput="calculate()"></td>
+                        <td class="item-sub">0</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
             </table>
+            <button class="btn btn-blue" onclick="addRow()">+ Tambah Baris</button>
+            <textarea id="catatan" placeholder="Catatan tambahan..." style="margin-top:10px"></textarea>
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+                <button class="btn btn-orange" onclick="saveToQueue()">Ke Antrean</button>
+                <button class="btn btn-blue" onclick="generate('Estimasi')">Cetak Estimasi</button>
+                <button class="btn btn-green" onclick="generate('Nota', true)">Simpan & Cetak Nota</button>
+            </div>
         </div>
-        <button onclick="addRow()" style="margin-top:10px; background:#3498db; width:100%; padding:10px;">+ Tambah Item Pekerjaan</button>
-        <div style="margin-top:15px;"><label>Catatan Servis:</label><textarea id="catatanTrx" rows="2"></textarea></div>
-        <div class="total-banner" id="dispTotal">Total: Rp 0</div>
-        <button onclick="processSaveAndPrint()" style="margin-top:15px; background:var(--success); width: 100%; padding: 15px; font-size: 1rem;">💾 SIMPAN & CETAK NOTA</button>
+
+        <div id="printOutput" class="print-area" style="display:none;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px;">
+                <div style="width: 60%;">
+                    <h2 id="p-namaBengkel" style="margin:0; border:none; color:#000; font-size: 18px;">NAMA BENGKEL</h2>
+                    <div id="p-alamatBengkel" style="font-size: 11px;">Alamat</div>
+                    <div id="p-hpBengkel" style="font-size: 11px;">HP: -</div>
+                </div>
+                <div style="text-align: right; width: 35%;">
+                    <h3 id="p-tipe" style="margin:0; border:none; text-decoration: underline; color:#000;">NOTA</h3>
+                    <div id="p-tgl" style="font-size: 11px;">Tgl: -</div>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">
+                <div>
+                    <strong>Pelanggan:</strong> <span id="p-cust"></span><br>
+                    <strong>Mobil:</strong> <span id="p-unit"></span>
+                </div>
+                <div style="text-align: right;">
+                    <strong>KM:</strong> <span id="p-km"></span><br>
+                    <strong>Mekanik:</strong> <span id="p-mekanik"></span>
+                </div>
+            </div>
+            <div id="p-tables" style="margin-top: 10px;"></div>
+            <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                <div style="width: 55%; font-size: 11px;">
+                    <strong>Catatan:</strong> <span id="p-catatan"></span><br>
+                    <div id="p-rekening" style="margin-top:5px; font-style: italic;"></div>
+                </div>
+                <div style="width: 40%; text-align: right;">
+                    <h3 style="border:none; margin:0; color:#000; font-size: 16px;">Total: Rp <span id="p-total">0</span></h3>
+                </div>
+            </div>
+            <div style="margin-top: 30px; text-align: right; font-size: 12px;">
+                Hormat Kami,<br><br><br>
+                <strong id="p-ownerSign">( .................... )</strong>
+            </div>
+            <button class="btn btn-blue no-print" onclick="window.print()" style="width:100%; margin-top:30px;">KLIK CETAK (A5/A4)</button>
+        </div>
     </div>
 
-    <div id="riwayat" class="section">
-        <h3>Histori Lengkap Pekerjaan</h3>
-        <div style="display:flex; gap:5px; margin-bottom:15px;">
-            <input type="text" id="searchFilter" onkeyup="filterRiwayat()" placeholder="Cari Nama/Plat/Pekerjaan..." style="flex:2">
-            <input type="date" id="filterTgl" onchange="filterRiwayat()" style="flex:1">
+    <div id="tab-wo" class="section">
+        <div id="wo-print-area" class="print-area">
+            <center><h2 style="border:none;">WORKING ORDER</h2></center>
+            <div id="wo-content"></div>
         </div>
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr><th>Tgl</th><th>Unit/Pol</th><th>Uraian Pekerjaan</th><th width="40">Qty</th><th>Harga</th><th>Catatan</th><th class="no-print">#</th></tr>
-                </thead>
-                <tbody id="riwayatBody"></tbody>
-            </table>
-        </div>
+        <button class="btn btn-blue no-print" onclick="window.print()" style="width:100%; margin-top:15px;">Print WO</button>
     </div>
 
-    <div id="pengeluaran" class="section">
-        <h3>Catat Biaya / Pengeluaran</h3>
-        <div class="form-group">
-            <input type="date" id="tglKeluar">
-            <input type="text" id="ketKeluar" placeholder="Keterangan">
-            <input type="number" id="nomKeluar" placeholder="Rp">
-            <button onclick="addPengeluaran()" style="background:var(--success);">Simpan</button>
+    <div id="tab-biaya" class="section">
+        <h3>Pengeluaran Kas</h3>
+        <div class="grid-2">
+            <select id="expCat"><option value="Gaji">Gaji</option><option value="Belanja Sparepart">Belanja Sparepart</option><option value="Administrasi">Administrasi</option></select>
+            <input type="number" id="expNom" placeholder="Nominal Rp">
+            <input type="text" id="expDesc" placeholder="Keterangan">
+            <button class="btn btn-green" onclick="saveBiaya()">Simpan Biaya</button>
         </div>
-        <table>
-            <tbody id="keluarBody"></tbody>
+        <table id="tableBiaya">
+            <thead><tr><th>Tgl</th><th>Kategori</th><th>Ket</th><th>Nominal</th><th>Hapus</th></tr></thead>
+            <tbody id="biayaList"></tbody>
         </table>
     </div>
 
-    <div id="laporan" class="section">
-        <h3>Laporan Keuangan</h3>
-        <input type="month" id="filterBulan" onchange="runLaporan()">
-        <div style="margin-top:15px">
-            <div class="card-report bg-in">Pemasukan<br><h3 id="repIn">Rp 0</h3></div>
-            <div class="card-report bg-out">Pengeluaran<br><h3 id="repOut">Rp 0</h3></div>
-            <div class="card-report bg-net">Laba Bersih<br><h3 id="repNet">Rp 0</h3></div>
+    <div id="tab-riwayat" class="section">
+        <h3>Riwayat Pekerjaan</h3>
+        <input type="text" id="search" placeholder="Cari Pelanggan/Unit..." onkeyup="loadRiwayat()" style="margin-bottom:15px">
+        <div style="overflow-x: auto;">
+            <table>
+                <thead><tr><th style="width:30px"></th><th>Tgl</th><th>Nama</th><th>Unit</th><th>KM</th><th>Total</th><th>Aksi</th></tr></thead>
+                <tbody id="historyList"></tbody>
+            </table>
         </div>
     </div>
 
-    <div id="settings" class="section">
-        <h3>Profil & Data</h3>
-        <div class="form-group">
-            <div><label>Nama Bengkel</label><input type="text" id="setNama"></div>
-            <div><label>Alamat</label><input type="text" id="setAlamat"></div>
-            <div><label>WA</label><input type="text" id="setWA"></div>
-            <div><label>Rekening</label><input type="text" id="setRek"></div>
-            <div><label>Pemilik</label><input type="text" id="setOwner"></div>
-        </div>
-        <button onclick="saveSettings()" style="background:var(--success); width:100%; margin-bottom:20px;">💾 Simpan Profil</button>
-        <hr>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
-            <button onclick="exportExcel()" style="background:#2980b9;">📥 Backup Excel</button>
-            <button onclick="document.getElementById('importFile').click()" style="background:#8e44ad;">📤 Import Excel</button>
-            <input type="file" id="importFile" style="display:none" accept=".xlsx" onchange="handleImport(event)">
-            <button onclick="resetData()" style="background:var(--danger); grid-column: span 2;">🗑️ Reset Semua Data</button>
+    <div id="tab-laporan" class="section">
+        <h3>Laporan Keuangan</h3>
+        <table>
+            <tr style="background:#eee"><th colspan="2">REKAPITULASI</th></tr>
+            <tr><td>Total Jasa</td><td id="r-jasa">0</td></tr>
+            <tr><td>Total Sparepart</td><td id="r-part">0</td></tr>
+            <tr><td>Total Biaya/Pengeluaran</td><td id="r-total-out">0</td></tr>
+            <tr style="background:var(--primary); color:#fff"><td><strong>LABA BERSIH</strong></td><td id="r-profit">0</td></tr>
+        </table>
+        <button class="btn btn-blue no-print" onclick="window.print()" style="margin-top:20px">Print Laporan</button>
+    </div>
+
+    <div id="tab-set" class="section">
+        <h3>Pengaturan</h3>
+        <div class="form-group"><label>Nama Bengkel:</label><input type="text" id="setNama"></div>
+        <div class="form-group"><label>Alamat:</label><input type="text" id="setAlamat"></div>
+        <div class="form-group"><label>No. HP:</label><input type="text" id="setHP"></div>
+        <div class="form-group"><label>Info Rekening:</label><textarea id="setRek"></textarea></div>
+        <div class="form-group"><label>Nama Pemilik:</label><input type="text" id="setSign"></div>
+        <button class="btn btn-green" onclick="saveSettings()">Simpan</button>
+        <div style="margin-top:30px; padding:15px; background:#fff5f5; border:1px solid #fcc">
+            <h4>Database</h4>
+            <button class="btn btn-blue" onclick="exportData()">Backup</button>
+            <button class="btn btn-blue" onclick="importData()">Restore</button>
+            <button class="btn btn-red" onclick="resetData()">Reset</button>
         </div>
     </div>
 </div>
 
-<div id="printArea"></div>
+<nav class="bottom-nav no-print">
+    <button class="nav-item active" onclick="openTab(event, 'tab-input')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>Input</button>
+    <button class="nav-item" onclick="openTab(event, 'tab-wo'); updateWO();"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>W.O</button>
+    <button class="nav-item" onclick="openTab(event, 'tab-biaya'); loadBiaya();"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 1.9 1.55 3.28 3.68 3.75V21h3v-2.15c2.19-.35 3.78-1.74 3.78-3.65 0-2.72-2.36-3.65-4.88-4.3z"/></svg>Biaya</button>
+    <button class="nav-item" onclick="openTab(event, 'tab-riwayat'); loadRiwayat();"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>Riwayat</button>
+    <button class="nav-item" onclick="openTab(event, 'tab-laporan'); loadLaporan();"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>Laporan</button>
+    <button class="nav-item" onclick="openTab(event, 'tab-set');"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L3.82 8.87c-.11.21-.06.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>Set</button>
+</nav>
 
 <script>
-    const STORAGE_KEY = 'DB_BENGKEL_V3_BOTTOM';
-    let db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
-        config: { name: 'Bengkel Baru', addr: 'Jl. Contoh No. 1', wa: '08xx', rek: '-', owner: 'Owner' },
-        trxs: [], exps: []
-    };
+    let db_history = JSON.parse(localStorage.getItem('b_history_v6') || "[]");
+    let db_biaya = JSON.parse(localStorage.getItem('b_biaya_v6') || "[]");
+    let db_queue = JSON.parse(localStorage.getItem('b_queue_v6') || "[]");
 
-    window.onload = () => { initApp(); refreshUI(); runLaporan(); };
-
-    function initApp() {
-        document.getElementById('dispNama').innerText = db.config.name;
-        document.getElementById('dispAlamat').innerText = db.config.addr;
-        document.getElementById('setNama').value = db.config.name;
-        document.getElementById('setAlamat').value = db.config.addr;
-        document.getElementById('setWA').value = db.config.wa;
-        document.getElementById('setRek').value = db.config.rek;
-        document.getElementById('setOwner').value = db.config.owner;
-        document.getElementById('tglTrx').valueAsDate = new Date();
-        document.getElementById('tglKeluar').valueAsDate = new Date();
-        document.getElementById('filterBulan').value = new Date().toISOString().slice(0, 7);
-        genNota();
-        if(document.getElementById('inputBody').innerHTML === "") addRow();
-    }
-
-    function genNota() {
-        const d = new Date();
-        const tag = `${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
-        const count = db.trxs.filter(t => t.nota.startsWith(tag)).length;
-        document.getElementById('noNota').value = `${tag}-${String(count + 1).padStart(4, '0')}`;
+    function openTab(evt, tabName) {
+        document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+        document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+        document.getElementById(tabName).classList.add("active");
+        if(evt) evt.currentTarget.classList.add("active");
     }
 
     function addRow() {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td><input type="text" class="i-d"></td><td><input type="number" class="i-q" value="1" oninput="calc()"></td><td><input type="number" class="i-p" value="0" oninput="calc()"></td><td><button onclick="this.parentElement.parentElement.remove(); calc()" style="background:red; color:white; border:none; padding:5px 8px; border-radius:3px;">X</button></td>`;
-        document.getElementById('inputBody').appendChild(tr);
+        let tb = document.querySelector("#itemTable tbody");
+        let row = tb.insertRow();
+        row.innerHTML = `<td><select class="item-cat"><option value="Jasa">Jasa</option><option value="Part">Part</option></select></td>
+        <td><input type="text" class="item-desc"></td><td><input type="number" class="item-qty" oninput="calculate()"></td>
+        <td><input type="number" class="item-price" oninput="calculate()"></td><td class="item-sub">0</td>
+        <td><button class="btn-red" onclick="this.parentElement.parentElement.remove(); calculate();">X</button></td>`;
     }
 
-    function calc() {
-        let tot = 0;
-        document.querySelectorAll('#inputBody tr').forEach(r => {
-            tot += (r.querySelector('.i-q').value * r.querySelector('.i-p').value);
+    function calculate() {
+        let total = 0;
+        document.querySelectorAll("#itemTable tbody tr").forEach(r => {
+            let q = r.querySelector(".item-qty").value || 0;
+            let p = r.querySelector(".item-price").value || 0;
+            let sub = q * p;
+            r.querySelector(".item-sub").innerText = sub.toLocaleString('id-ID');
+            total += sub;
         });
-        document.getElementById('dispTotal').innerText = "Total: Rp " + tot.toLocaleString('id-ID');
+        return total;
     }
 
-    function showSection(id, btnId) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active-section'));
-        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).classList.add('active-section');
-        document.getElementById(btnId).classList.add('active');
-        window.scrollTo(0,0);
+    function saveToQueue() {
+        let d = getFormData(); if(!d.nama) return alert("Nama Kosong!");
+        db_queue.push(d); localStorage.setItem('b_queue_v6', JSON.stringify(db_queue));
+        resetForm(); loadQueue(); alert("Berhasil simpan ke antrean");
     }
 
-    function refreshUI() {
-        const rb = document.getElementById('riwayatBody'); rb.innerHTML = '';
-        const sorted = [...db.trxs].sort((a, b) => new Date(b.tgl) - new Date(a.tgl));
-        sorted.forEach(t => {
-            const items = JSON.parse(t.items || "[]");
-            items.forEach((it, idx) => {
-                const tr = document.createElement('tr');
-                if(idx === 0) tr.style.borderTop = "2px solid #2c3e50";
-                tr.innerHTML = `
-                    <td>${idx === 0 ? t.tgl : ''}</td>
-                    <td>${idx === 0 ? `<b>${t.cust}</b><br><span class="badge-pol">${t.pol}</span>` : ''}</td>
-                    <td style="background:#fffef0">${it.d}</td>
-                    <td align="center">${it.q}</td>
-                    <td align="right">${parseInt(it.p).toLocaleString()}</td>
-                    <td>${idx === 0 ? (t.note || '-') : ''}</td>
-                    <td>${idx === 0 ? `<button onclick="reprint('${t.nota}')" style="background:#27ae60; color:white; border:none; padding:3px 7px; border-radius:3px; font-size:10px;">Cetak</button>` : ''}</td>
-                `;
-                rb.appendChild(tr);
-            });
+    function loadQueue() {
+        let h = ""; db_queue.forEach((q, i) => {
+            h += `<div class="queue-badge"><span><strong>${q.nama}</strong> (${q.unit})</span>
+            <div><button class="btn btn-blue" onclick="editQueue(${i})">Buka</button><button class="btn btn-red" onclick="delQueue(${i})">X</button></div></div>`;
         });
-
-        const eb = document.getElementById('keluarBody'); eb.innerHTML = '';
-        db.exps.slice().reverse().forEach((e, i) => {
-            eb.innerHTML += `<tr><td>${e.tgl}</td><td>${e.ket}</td><td>${e.nom.toLocaleString()}</td><td><button onclick="delExp(${db.exps.length - 1 - i})" style="background:red; color:white; border:none; padding:3px 7px; border-radius:3px;">X</button></td></tr>`;
-        });
+        document.getElementById('queue-list').innerHTML = h;
     }
 
-    function processSaveAndPrint() {
-        const items = [];
-        document.querySelectorAll('#inputBody tr').forEach(r => {
-            const d = r.querySelector('.i-d').value;
-            const q = r.querySelector('.i-q').value;
-            const p = r.querySelector('.i-p').value;
-            if(d) items.push({ d, q, p });
+    function editQueue(i) {
+        let q = db_queue[i];
+        document.getElementById('custName').value = q.nama; document.getElementById('carInfo').value = q.unit;
+        document.getElementById('km').value = q.km; document.getElementById('mekanikName').value = q.mekanik;
+        document.getElementById('catatan').value = q.catatan;
+        let tb = document.querySelector("#itemTable tbody"); tb.innerHTML = "";
+        q.items.forEach(it => {
+            let row = tb.insertRow();
+            row.innerHTML = `<td><select class="item-cat"><option value="Jasa" ${it.cat=='Jasa'?'selected':''}>Jasa</option><option value="Part" ${it.cat=='Part'?'selected':''}>Part</option></select></td>
+            <td><input type="text" class="item-desc" value="${it.d}"></td><td><input type="number" class="item-qty" value="${it.q}" oninput="calculate()"></td>
+            <td><input type="number" class="item-price" value="${it.p}" oninput="calculate()"></td><td class="item-sub">0</td>
+            <td><button class="btn-red" onclick="this.parentElement.parentElement.remove(); calculate();">X</button></td>`;
         });
-        if(items.length === 0) return alert("Pekerjaan kosong!");
+        calculate(); db_queue.splice(i, 1); localStorage.setItem('b_queue_v6', JSON.stringify(db_queue)); loadQueue();
+    }
 
-        const trx = {
-            nota: document.getElementById('noNota').value,
-            tgl: document.getElementById('tglTrx').value,
-            cust: document.getElementById('custNama').value,
-            pol: document.getElementById('noPol').value.toUpperCase(),
-            unit: document.getElementById('mobilKm').value,
-            note: document.getElementById('catatanTrx').value,
-            total: items.reduce((a, b) => a + (b.q * b.p), 0),
-            items: JSON.stringify(items)
+    function delQueue(i) { db_queue.splice(i,1); localStorage.setItem('b_queue_v6', JSON.stringify(db_queue)); loadQueue(); }
+
+    function getFormData() {
+        let its = []; let sj = 0; let sp = 0;
+        document.querySelectorAll("#itemTable tbody tr").forEach(r => {
+            let c = r.querySelector(".item-cat").value; let d = r.querySelector(".item-desc").value;
+            let q = Number(r.querySelector(".item-qty").value) || 0; let p = Number(r.querySelector(".item-price").value) || 0;
+            if(d) { its.push({cat:c, d:d, q:q, p:p}); if(c === 'Jasa') sj += (q*p); else sp += (q*p); }
+        });
+        return {
+            nama: document.getElementById('custName').value, unit: document.getElementById('carInfo').value,
+            km: document.getElementById('km').value, mekanik: document.getElementById('mekanikName').value,
+            catatan: document.getElementById('catatan').value, items: its, subJasa: sj, subPart: sp, total: sj + sp,
+            tgl: new Date().toLocaleDateString('id-ID')
         };
-        db.trxs.push(trx);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-        reprint(trx.nota);
-        setTimeout(() => location.reload(), 1200);
     }
 
-    function reprint(no) {
-        const t = db.trxs.find(x => x.nota === no);
-        if(!t) return;
-        const items = JSON.parse(t.items);
-        let rows = '';
-        items.forEach(it => { rows += `<tr><td>${it.d}</td><td align="center">${it.q}</td><td align="right">${parseInt(it.p).toLocaleString()}</td><td align="right">${(it.q*it.p).toLocaleString()}</td></tr>`; });
+    function generate(tipe, save = false) {
+        let d = getFormData(); if(!d.nama) return alert("Nama Pelanggan Kosong!");
+        document.getElementById('printOutput').style.display = 'block';
+        document.getElementById('p-tipe').innerText = tipe.toUpperCase();
+        document.getElementById('p-cust').innerText = d.nama;
+        document.getElementById('p-unit').innerText = d.unit;
+        document.getElementById('p-km').innerText = d.km;
+        document.getElementById('p-tgl').innerText = "Tgl: " + d.tgl;
+        document.getElementById('p-catatan').innerText = d.catatan;
+        document.getElementById('p-mekanik').innerText = d.mekanik;
         
-        const printContent = `
-            <div style="padding:30px; font-family:sans-serif;">
-                <table width="100%">
-                    <tr><td><h2>${db.config.name}</h2><p>${db.config.addr}</p><p>WA: ${db.config.wa}</p></td><td align="right"><h3>INVOICE</h3><p><b>${t.nota}</b></p></td></tr>
-                </table>
-                <hr>
-                <p>Nama: ${t.cust} | Plat: ${t.pol} | Unit: ${t.unit} | Tgl: ${t.tgl}</p>
-                <table width="100%" border="1" style="border-collapse:collapse; margin-top:10px;">
-                    <thead><tr style="background:#eee"><th>Uraian</th><th>Qty</th><th>Harga</th><th>Subtotal</th></tr></thead>
-                    <tbody>${rows}</tbody>
-                </table>
-                <p>Catatan: ${t.note || '-'}</p>
-                <div style="display:flex; justify-content:space-between; margin-top:20px;">
-                    <div style="border:1px dashed #666; padding:10px; font-size:12px;"><b>Pembayaran:</b><br>${db.config.rek}</div>
-                    <div align="right"><h3>TOTAL: Rp ${t.total.toLocaleString()}</h3></div>
-                </div>
-                <div style="margin-top:40px; display:flex; justify-content:space-between; text-align:center;">
-                    <div>Hormat Kami,<br><br><br>( ${db.config.owner} )</div>
-                </div>
-            </div>
-        `;
-        document.getElementById('printArea').innerHTML = printContent;
-        window.location.href = "rawbt:base64," + btoa(unescape(encodeURIComponent(printContent)));
+        let h = "<strong>A. JASA</strong><table style='width:100%'><tr><th>Uraian Pekerjaan</th><th style='text-align:right'>Biaya</th></tr>";
+        d.items.filter(x => x.cat === 'Jasa').forEach(i => { h += `<tr><td>${i.d}</td><td style='text-align:right'>${i.p.toLocaleString()}</td></tr>`; });
+        h += "</table><strong style='display:block;margin-top:5px'>B. SPAREPART</strong><table style='width:100%'><tr><th>Item</th><th>Qty</th><th>Harga</th><th style='text-align:right'>Total</th></tr>";
+        d.items.filter(x => x.cat === 'Part').forEach(i => { h += `<tr><td>${i.d}</td><td>${i.q}</td><td>${i.p.toLocaleString()}</td><td style='text-align:right'>${(i.q*i.p).toLocaleString()}</td></tr>`; });
+        h += "</table>";
+        document.getElementById('p-tables').innerHTML = h;
+        document.getElementById('p-total').innerText = d.total.toLocaleString();
+
+        if(save) {
+            db_history.push(d); localStorage.setItem('b_history_v6', JSON.stringify(db_history));
+            setTimeout(() => { window.print(); if(confirm("Selesai Cetak? Kosongkan Form?")) resetForm(); }, 500);
+        } else {
+            setTimeout(() => { window.print(); }, 500);
+        }
+        window.scrollTo(0, document.body.scrollHeight);
     }
 
-    function handleImport(e) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            try {
-                const wb = XLSX.read(new Uint8Array(ev.target.result), {type: 'array'});
-                const data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-                if (data.length > 0 && !data[0].nota && !data[0].Nota) throw new Error("Format Kolom Excel Salah!");
-                data.forEach(r => {
-                    const clean = { nota: r.nota||r.Nota, tgl: r.tgl||r.Tanggal, cust: r.cust||r.Customer, pol: r.pol||r.Polisi, unit: r.unit||r.Unit, note: r.note||r.Catatan, total: r.total||0, items: r.items||"[]" };
-                    if(!db.trxs.find(x => x.nota === clean.nota)) db.trxs.push(clean);
-                });
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-                alert("Berhasil Import!"); location.reload();
-            } catch(err) { alert(err.message); }
-        };
-        reader.readAsArrayBuffer(e.target.files[0]);
+    function resetForm() {
+        document.getElementById('custName').value = ""; document.getElementById('carInfo').value = "";
+        document.getElementById('km').value = ""; document.getElementById('catatan').value = "";
+        document.getElementById('mekanikName').value = "";
+        document.querySelector("#itemTable tbody").innerHTML = `<tr><td><select class="item-cat"><option value="Jasa">Jasa</option><option value="Part">Part</option></select></td><td><input type="text" class="item-desc"></td><td><input type="number" class="item-qty" oninput="calculate()"></td><td><input type="number" class="item-price" oninput="calculate()"></td><td class="item-sub">0</td><td>-</td></tr>`;
+        document.getElementById('printOutput').style.display = 'none';
     }
 
-    function filterRiwayat() {
-        const kw = document.getElementById('searchFilter').value.toLowerCase();
-        const tgl = document.getElementById('filterTgl').value;
-        document.querySelectorAll('#riwayatBody tr').forEach(row => {
-            const txt = row.innerText.toLowerCase();
-            row.style.display = (txt.includes(kw) && (!tgl || txt.includes(tgl))) ? "" : "none";
+    function updateWO() {
+        let d = getFormData();
+        let h = `<strong>Unit:</strong> ${d.unit} | <strong>Mekanik:</strong> ${d.mekanik}<hr><ul>`;
+        d.items.forEach(i => { h += `<li>[ ] ${i.d} (${i.q})</li>`; });
+        h += `</ul><strong>Cat:</strong> ${d.catatan}`;
+        document.getElementById('wo-content').innerHTML = h;
+    }
+
+    function loadRiwayat() {
+        let s = document.getElementById('search').value.toLowerCase(); let htl = "";
+        [...db_history].reverse().forEach((h, i) => {
+            let idx = db_history.length - 1 - i;
+            if(h.nama.toLowerCase().includes(s) || h.unit.toLowerCase().includes(s)) {
+                let det = h.items.map(it => `<div>• <span class="${it.cat=='Jasa'?'badge-jasa':'badge-part'}">[${it.cat}]</span> ${it.d} (${it.q}x${it.p.toLocaleString()})</div>`).join("");
+                htl += `<tr onclick="toggleDetail(${idx})" style="cursor:pointer">
+                <td style="color:var(--primary); font-weight:bold;">+</td><td>${h.tgl}</td><td>${h.nama}</td><td>${h.unit}</td><td>${h.km}</td><td>${h.total.toLocaleString()}</td>
+                <td><button class="btn-red" style="padding:4px" onclick="event.stopPropagation(); delHistory(${idx})">Del</button></td></tr>
+                <tr id="det-${idx}" class="detail-row"><td colspan="7"><div class="detail-box">
+                <strong>Mekanik:</strong> ${h.mekanik}<br><strong>Detail:</strong>${det}<br><i>Cat: ${h.catatan}</i></div></td></tr>`;
+            }
         });
+        document.getElementById('historyList').innerHTML = htl;
     }
 
-    function runLaporan() {
-        const m = document.getElementById('filterBulan').value;
-        const inc = db.trxs.filter(t => t.tgl.startsWith(m)).reduce((a, b) => a + b.total, 0);
-        const out = db.exps.filter(e => e.tgl.startsWith(m)).reduce((a, b) => a + b.nom, 0);
-        document.getElementById('repIn').innerText = "Rp " + inc.toLocaleString();
-        document.getElementById('repOut').innerText = "Rp " + out.toLocaleString();
-        document.getElementById('repNet').innerText = "Rp " + (inc - out).toLocaleString();
+    function toggleDetail(i) { let e = document.getElementById('det-'+i); e.style.display = (e.style.display==='table-row'?'none':'table-row'); }
+    function delHistory(i) { if(confirm("Hapus?")) { db_history.splice(i,1); localStorage.setItem('b_history_v6',JSON.stringify(db_history)); loadRiwayat(); }}
+
+    function saveBiaya() {
+        let b = { tgl: new Date().toLocaleDateString('id-ID'), cat: document.getElementById('expCat').value, nom: Number(document.getElementById('expNom').value), desc: document.getElementById('expDesc').value };
+        db_biaya.push(b); localStorage.setItem('b_biaya_v6', JSON.stringify(db_biaya)); loadBiaya();
+        document.getElementById('expNom').value = ""; document.getElementById('expDesc').value = "";
+    }
+
+    function loadBiaya() {
+        let h = ""; db_biaya.forEach((b, i) => { h += `<tr><td>${b.tgl}</td><td>${b.cat}</td><td>${b.desc}</td><td>${b.nom.toLocaleString()}</td><td><button class="btn-red" onclick="delBiaya(${i})">X</button></td></tr>`; });
+        document.getElementById('biayaList').innerHTML = h;
+    }
+
+    function delBiaya(i) { db_biaya.splice(i,1); localStorage.setItem('b_biaya_v6', JSON.stringify(db_biaya)); loadBiaya(); }
+
+    function loadLaporan() {
+        let j = db_history.reduce((a,b) => a + (b.subJasa || 0), 0);
+        let p = db_history.reduce((a,b) => a + (b.subPart || 0), 0);
+        let out = db_biaya.reduce((a,b) => a + b.nom, 0);
+        document.getElementById('r-jasa').innerText = j.toLocaleString();
+        document.getElementById('r-part').innerText = p.toLocaleString();
+        document.getElementById('r-total-out').innerText = out.toLocaleString();
+        document.getElementById('r-profit').innerText = ((j+p)-out).toLocaleString();
     }
 
     function saveSettings() {
-        db.config = { name: document.getElementById('setNama').value, addr: document.getElementById('setAlamat').value, wa: document.getElementById('setWA').value, rek: document.getElementById('setRek').value, owner: document.getElementById('setOwner').value };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-        alert("Profil Disimpan!"); location.reload();
+        localStorage.setItem('s_nama', document.getElementById('setNama').value);
+        localStorage.setItem('s_alamat', document.getElementById('setAlamat').value);
+        localStorage.setItem('s_hp', document.getElementById('setHP').value);
+        localStorage.setItem('s_rek', document.getElementById('setRek').value);
+        localStorage.setItem('s_sign', document.getElementById('setSign').value);
+        alert("Disimpan"); location.reload();
     }
 
-    function exportExcel() {
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db.trxs), "DataTransaksi");
-        XLSX.writeFile(wb, "Backup_Bengkel.xlsx");
+    function loadSettings() {
+        let n = localStorage.getItem('s_nama') || "BENGKEL PRO";
+        document.getElementById('displayNamaBengkel').innerText = n;
+        document.getElementById('p-namaBengkel').innerText = n;
+        document.getElementById('p-alamatBengkel').innerText = localStorage.getItem('s_alamat') || "Alamat";
+        document.getElementById('p-hpBengkel').innerText = "HP: " + (localStorage.getItem('s_hp') || "-");
+        document.getElementById('p-rekening').innerText = localStorage.getItem('s_rek') || "";
+        document.getElementById('p-ownerSign').innerText = "( " + (localStorage.getItem('s_sign') || "Pemilik") + " )";
+        document.getElementById('setNama').value = n;
+        document.getElementById('setAlamat').value = localStorage.getItem('s_alamat');
+        document.getElementById('setHP').value = localStorage.getItem('s_hp');
+        document.getElementById('setRek').value = localStorage.getItem('s_rek');
+        document.getElementById('setSign').value = localStorage.getItem('s_sign');
     }
 
-    function addPengeluaran() {
-        const p = { tgl: document.getElementById('tglKeluar').value, ket: document.getElementById('ketKeluar').value, nom: parseInt(document.getElementById('nomKeluar').value || 0) };
-        if(p.ket) { db.exps.push(p); localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); location.reload(); }
+    function exportData() {
+        let a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(localStorage)], {type: 'application/json'}));
+        a.download = 'backup_bengkel.json'; a.click();
     }
 
-    function delExp(i) { if(confirm("Hapus?")) { db.exps.splice(i, 1); localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); location.reload(); } }
-    function resetData() { if(confirm("Hapus semua?")) { localStorage.clear(); location.reload(); } }
+    function importData() {
+        let i = document.createElement('input'); i.type = 'file';
+        i.onchange = e => {
+            let r = new FileReader();
+            r.onload = ev => {
+                let d = JSON.parse(ev.target.result);
+                Object.keys(d).forEach(k => localStorage.setItem(k, d[k]));
+                location.reload();
+            };
+            r.readAsText(e.target.files[0]);
+        }; i.click();
+    }
+
+    function resetData() { if(confirm("Reset semua data?")) { localStorage.clear(); location.reload(); } }
+
+    window.onload = () => { loadSettings(); loadQueue(); };
 </script>
 </body>
 </html>
