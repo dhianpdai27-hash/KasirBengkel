@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bengkel Pro - Master V15.28 FINAL</title>
+    <title>Bengkel Pro - Master V15.29</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', sans-serif; padding-bottom: 90px; background: #f4f7fa; }
@@ -30,13 +30,14 @@
         .table-container { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid #ddd; }
         #table-riwayat { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1400px; }
         #table-riwayat th, #table-riwayat td { border: 1px solid #eee; padding: 8px; text-align: left; }
+        .btn-print-mini { background: #2563eb; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="bg-blue-900 text-white p-4 sticky top-0 flex justify-between items-center no-print z-50">
-    <h1 id="disp-nama" class="font-bold uppercase italic text-xl">BENGKEL PRO</h1>
-    <div class="text-[9px] bg-green-600 px-2 py-1 rounded uppercase font-bold">V15.28</div>
+    <h1 id="header-nama-bengkel" class="font-bold uppercase italic text-xl text-yellow-400">LOADING...</h1>
+    <div class="text-[9px] bg-green-600 px-2 py-1 rounded uppercase font-bold text-white">V15.29</div>
 </div>
 
 <div class="p-4 no-print">
@@ -77,9 +78,9 @@
 
     <div id="menu-biaya" class="view hidden">
         <div class="card">
-            <h3 class="font-bold mb-3 border-b pb-1">Input Pengeluaran Operasional</h3>
+            <h3 class="font-bold mb-3 border-b pb-1 text-red-600 uppercase text-xs">Input Pengeluaran Operasional</h3>
             <input type="date" id="b-tgl" class="mb-2">
-            <input type="text" id="b-nama" placeholder="Keterangan (Gaji/Listrik/Sewa/Dll)" class="mb-2">
+            <input type="text" id="b-nama" placeholder="Keterangan (Gaji/Listrik/Sewa/Sparepart Stok)" class="mb-2">
             <input type="number" id="b-jumlah" placeholder="Jumlah Rp" class="mb-2">
             <button onclick="simpanBiaya()" class="w-full bg-red-600 text-white py-2 rounded font-bold uppercase text-xs">Simpan Biaya</button>
         </div>
@@ -92,7 +93,7 @@
         <input type="text" id="f-search" placeholder="Cari Nopol/Nota..." oninput="renderRiwayat()" class="w-full mb-2">
         <div class="table-container">
             <table id="table-riwayat">
-                <thead><tr class="bg-gray-100"><th>Tgl</th><th>Nota</th><th>Nopol</th><th>KM</th><th>Merk</th><th>Nama</th><th>Jasa</th><th>Part</th><th>Harga</th><th>Qty</th><th>Total</th><th>Catatan</th></tr></thead>
+                <thead><tr class="bg-gray-100"><th>Aksi</th><th>Tgl</th><th>Nota</th><th>Nopol</th><th>KM</th><th>Merk</th><th>Nama</th><th>Jasa</th><th>Part</th><th>Harga</th><th>Qty</th><th>Total</th><th>Catatan</th></tr></thead>
                 <tbody id="tbody-riwayat"></tbody>
             </table>
         </div>
@@ -112,11 +113,11 @@
             <button onclick="saveSettings()" class="w-full bg-black text-white py-2 rounded font-bold uppercase">Simpan</button>
         </div>
         <div class="card grid grid-cols-2 gap-2">
-            <button onclick="exportData()" class="bg-green-600 text-white py-2 rounded text-[10px] font-bold">EXPORT JSON</button>
-            <button onclick="document.getElementById('importFile').click()" class="bg-orange-500 text-white py-2 rounded text-[10px] font-bold uppercase">IMPORT JSON</button>
+            <button onclick="exportData()" class="bg-green-600 text-white py-2 rounded text-[10px] font-bold uppercase">Export JSON</button>
+            <button onclick="document.getElementById('importFile').click()" class="bg-orange-500 text-white py-2 rounded text-[10px] font-bold uppercase">Import JSON</button>
             <input type="file" id="importFile" class="hidden" onchange="importData(event)">
         </div>
-        <button onclick="resetData()" class="w-full mt-4 text-red-500 border border-red-500 py-2 rounded text-[10px] font-bold">RESET SEMUA DATA</button>
+        <button onclick="resetData()" class="w-full mt-4 text-red-500 border border-red-500 py-2 rounded text-[10px] font-bold uppercase">Reset Semua Data</button>
     </div>
 </div>
 
@@ -128,10 +129,10 @@
     </div>
     <div class="flex justify-between my-4 text-sm">
         <div><p>No. Polisi: <span id="p-nopol" class="font-bold"></span></p><p>Unit: <span id="p-unit"></span></p><p>KM: <span id="p-km"></span></p></div>
-        <div class="text-right"><p id="p-label-tipe" class="font-bold underline text-lg italic"></p><p>No: <span id="p-no"></span></p><p id="p-tgl-nota"></p></div>
+        <div class="text-right"><p id="p-label-tipe" class="font-bold underline text-lg italic uppercase"></p><p>No: <span id="p-no"></span></p><p id="p-tgl-nota"></p></div>
     </div>
     <table class="w-full">
-        <thead><tr class="bg-gray-100"><th>URAIAN PEKERJAAN / PART</th><th class="p-price-col">HARGA</th><th>QTY</th><th class="p-price-col">TOTAL</th></tr></thead>
+        <thead><tr class="bg-gray-200"><th>URAIAN PEKERJAAN / PART</th><th class="p-price-col">HARGA</th><th>QTY</th><th class="p-price-col">TOTAL</th></tr></thead>
         <tbody id="p-body"></tbody>
         <tfoot id="p-foot-total"><tr class="font-bold"><td colspan="3" class="text-right p-3">GRAND TOTAL (Rp)</td><td class="text-right p-3" id="p-total"></td></tr></tfoot>
     </table>
@@ -152,13 +153,14 @@
 </nav>
 
 <script>
-    const KEY = "BENGKEL_PRO_V1528";
+    const KEY = "BENGKEL_PRO_V1529";
     let db = JSON.parse(localStorage.getItem(KEY)) || { settings: { gsheet: "", nama: "BENGKEL PRO", rek: "", prefix: "DK-", nextNo: 1, alamat: "", hp: "", owner: "" }, transaksi: [], antrean: [], pengeluaran: [] };
 
     function init() {
         document.getElementById('in-tgl').valueAsDate = new Date();
         document.getElementById('b-tgl').valueAsDate = new Date();
         const s = db.settings;
+        document.getElementById('header-nama-bengkel').innerText = s.nama || "BENGKEL PRO";
         document.getElementById('s-nama').value = s.nama; document.getElementById('s-alamat').value = s.alamat;
         document.getElementById('s-hp').value = s.hp; document.getElementById('s-owner').value = s.owner;
         document.getElementById('s-rek').value = s.rek; document.getElementById('s-prefix').value = s.prefix;
@@ -177,16 +179,16 @@
     function recalc() {
         let t = 0; document.querySelectorAll('.item-row').forEach(r => {
             const h = parseFloat(r.querySelector('.i-price').value) || 0, q = parseFloat(r.querySelector('.i-qty').value) || 0;
-            const sub = h * q; r.querySelector('.i-sub').value = sub.toLocaleString(); t += sub;
+            const sub = h * q; r.querySelector('.i-sub').value = sub.toLocaleString('id-ID'); t += sub;
         });
-        document.getElementById('grand-total').innerText = t.toLocaleString();
+        document.getElementById('grand-total').innerText = t.toLocaleString('id-ID');
     }
 
     function simpanBiaya() {
         const t = document.getElementById('b-tgl').value, n = document.getElementById('b-nama').value, j = parseFloat(document.getElementById('b-jumlah').value) || 0;
         if(!n || j <= 0) return alert("Lengkapi data!");
         db.pengeluaran.push({tgl:t, nama:n, jumlah:j}); localStorage.setItem(KEY, JSON.stringify(db));
-        document.getElementById('b-nama').value = ""; document.getElementById('b-jumlah').value = ""; renderBiaya(); alert("Tersimpan!");
+        document.getElementById('b-nama').value = ""; document.getElementById('b-jumlah').value = ""; renderBiaya(); alert("Biaya Operasional Tersimpan!");
     }
 
     function renderBiaya() {
@@ -210,10 +212,10 @@
         } else {
             db.antrean.push({...common, items: sorted, tipe, total: document.getElementById('grand-total').innerText });
         }
-        renderCetak(sorted, tipe); localStorage.setItem(KEY, JSON.stringify(db)); window.print(); setTimeout(() => location.reload(), 500);
+        renderCetak(sorted, tipe, common); localStorage.setItem(KEY, JSON.stringify(db)); window.print(); setTimeout(() => location.reload(), 500);
     }
 
-    function renderCetak(items, tipe) {
+    function renderCetak(items, tipe, meta) {
         let h = ""; const isWO = (tipe === "WO");
         const jasa = items.filter(i => i.j), part = items.filter(i => i.p);
         if(jasa.length > 0){ h += `<tr class="cat-row"><td colspan="4">JASA / SERVICE</td></tr>`; jasa.forEach(i => h += `<tr><td>${i.j}</td><td class="p-price-col ${isWO?'wo-hidden':''} text-right">${i.h.toLocaleString()}</td><td class="text-center">${i.q}</td><td class="p-price-col ${isWO?'wo-hidden':''} text-right">${i.s.toLocaleString()}</td></tr>`); }
@@ -221,18 +223,27 @@
         document.getElementById('p-body').innerHTML = h;
         const s = db.settings; document.getElementById('p-toko').innerText = s.nama; document.getElementById('p-alamat-toko').innerText = s.alamat;
         document.getElementById('p-hp-toko').innerText = "WA: "+s.hp; document.getElementById('p-label-tipe').innerText = tipe;
-        document.getElementById('p-nopol').innerText = document.getElementById('in-nopol').value; document.getElementById('p-unit').innerText = document.getElementById('in-merk').value;
-        document.getElementById('p-no').innerText = document.getElementById('in-nota').value; document.getElementById('p-tgl-nota').innerText = "Tgl: "+document.getElementById('in-tgl').value;
-        document.getElementById('p-km').innerText = document.getElementById('in-km').value; document.getElementById('p-total').innerText = document.getElementById('grand-total').innerText;
-        document.getElementById('p-cat').innerText = document.getElementById('in-catatan').value; document.getElementById('p-rek').innerText = s.rek; document.getElementById('p-owner').innerText = s.owner;
+        document.getElementById('p-nopol').innerText = meta.nopol; document.getElementById('p-unit').innerText = meta.merk;
+        document.getElementById('p-no').innerText = meta.noTrx; document.getElementById('p-tgl-nota').innerText = "Tgl: "+meta.tgl;
+        document.getElementById('p-km').innerText = meta.km; document.getElementById('p-total').innerText = items.reduce((acc, i) => acc + i.s, 0).toLocaleString();
+        document.getElementById('p-cat').innerText = meta.catatan; document.getElementById('p-rek').innerText = s.rek; document.getElementById('p-owner').innerText = s.owner;
         document.getElementById('p-foot-total').style.display = isWO ? 'none' : 'table-footer-group';
         document.querySelectorAll('.p-price-col').forEach(el => { if(isWO) el.classList.add('wo-hidden'); else el.classList.remove('wo-hidden'); });
+    }
+
+    function cetakUlang(nota) {
+        const rows = db.transaksi.filter(t => t.noTrx === nota);
+        if(rows.length === 0) return alert("Data tidak ditemukan");
+        const meta = { tgl: rows[0].tgl, noTrx: rows[0].noTrx, nopol: rows[0].nopol, km: rows[0].km, merk: rows[0].merk, catatan: rows[0].catatan };
+        const items = rows.map(r => ({ j: r.uraian, p: r.sparepart, h: r.harga, q: r.qty, s: r.jumlah }));
+        renderCetak(items, "NOTA", meta);
+        window.print();
     }
 
     function renderRiwayat() {
         const s = document.getElementById('f-search').value.toLowerCase();
         const f = db.transaksi.filter(x => (x.nopol + x.noTrx + (x.nama||'')).toLowerCase().includes(s));
-        document.getElementById('tbody-riwayat').innerHTML = f.slice().reverse().map(x => `<tr><td>${x.tgl}</td><td>${x.noTrx}</td><td>${x.nopol}</td><td>${x.km}</td><td>${x.merk}</td><td>${x.nama}</td><td>${x.uraian || ''}</td><td>${x.sparepart || ''}</td><td class="text-right">${(x.harga||0).toLocaleString()}</td><td class="text-center">${x.qty}</td><td class="text-right font-bold">${(x.jumlah||0).toLocaleString()}</td><td>${x.catatan || '-'}</td></tr>`).join('');
+        document.getElementById('tbody-riwayat').innerHTML = f.slice().reverse().map(x => `<tr><td><button onclick="cetakUlang('${x.noTrx}')" class="btn-print-mini text-[9px]">CETAK</button></td><td>${x.tgl}</td><td>${x.noTrx}</td><td>${x.nopol}</td><td>${x.km}</td><td>${x.merk}</td><td>${x.nama}</td><td>${x.uraian || ''}</td><td>${x.sparepart || ''}</td><td class="text-right">${(x.harga||0).toLocaleString()}</td><td class="text-center">${x.qty}</td><td class="text-right font-bold">${(x.jumlah||0).toLocaleString()}</td><td>${x.catatan || '-'}</td></tr>`).join('');
     }
 
     function renderLaporan() {
@@ -240,7 +251,7 @@
         db.transaksi.forEach(t => { if(t.uraian) o_jasa += t.jumlah; if(t.sparepart) o_part += t.jumlah; });
         db.pengeluaran.forEach(p => peng += p.jumlah);
         const omz = o_jasa + o_part, laba = omz - peng;
-        document.getElementById('box-laporan').innerHTML = `<div class="card bg-blue-900 text-white text-center"><p class="text-xs uppercase opacity-70">Total Omzet</p><h3 class="text-2xl font-bold">Rp ${omz.toLocaleString()}</h3></div><div class="card bg-red-600 text-white text-center"><p class="text-xs uppercase opacity-70">Total Biaya Operasional</p><h3 class="text-2xl font-bold">Rp ${peng.toLocaleString()}</h3></div><div class="card bg-green-600 text-white text-center"><p class="text-xs uppercase opacity-70">Laba Bersih</p><h3 class="text-3xl font-black">Rp ${laba.toLocaleString()}</h3></div><div class="grid grid-cols-2 gap-2 text-center text-[10px] uppercase font-bold"><div class="card">Jasa: Rp ${o_jasa.toLocaleString()}</div><div class="card">Part: Rp ${o_part.toLocaleString()}</div></div>`;
+        document.getElementById('box-laporan').innerHTML = `<div class="card bg-blue-900 text-white text-center"><p class="text-xs uppercase opacity-70">Total Omzet</p><h3 class="text-2xl font-bold">Rp ${omz.toLocaleString()}</h3></div><div class="card bg-red-600 text-white text-center"><p class="text-xs uppercase opacity-70">Total Biaya Operasional</p><h3 class="text-2xl font-bold">Rp ${peng.toLocaleString()}</h3></div><div class="card bg-green-600 text-white text-center"><p class="text-xs uppercase opacity-70">Laba Bersih</p><h3 class="text-3xl font-black">Rp ${laba.toLocaleString()}</h3></div><div class="grid grid-cols-2 gap-2 text-center text-[10px] uppercase font-bold"><div class="card">Omzet Jasa: Rp ${o_jasa.toLocaleString()}</div><div class="card">Omzet Part: Rp ${o_part.toLocaleString()}</div></div>`;
     }
 
     function renderAntrean() {
@@ -268,7 +279,7 @@
 
     function saveSettings() {
         db.settings = { nama: document.getElementById('s-nama').value.toUpperCase(), alamat: document.getElementById('s-alamat').value, hp: document.getElementById('s-hp').value, owner: document.getElementById('s-owner').value, rek: document.getElementById('s-rek').value, prefix: document.getElementById('s-prefix').value, nextNo: parseInt(document.getElementById('s-next-no').value) || 1, gsheet: document.getElementById('s-gsheet').value };
-        localStorage.setItem(KEY, JSON.stringify(db)); alert("Saved!"); location.reload();
+        localStorage.setItem(KEY, JSON.stringify(db)); location.reload();
     }
     
     function resetData() { if(confirm("Hapus Permanen SEMUA data transaksi & biaya?")) { localStorage.clear(); location.reload(); } }
