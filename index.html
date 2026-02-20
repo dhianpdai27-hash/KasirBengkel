@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bengkel Pro - Master V15.21 FINAL</title>
+    <title>Bengkel Pro - Master V15.22</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', sans-serif; padding-bottom: 90px; background: #f4f7fa; }
@@ -21,8 +21,6 @@
             .no-print, .nav-bottom, button, .bg-blue-900, .view { display: none !important; }
             #print-area { display: block !important; width: 100%; visibility: visible; }
             .header-nota { border-bottom: 3px solid black; padding-bottom: 8px; margin-bottom: 10px; }
-            
-            /* PONDASI NOTA A4 DENGAN FONT LEBIH BESAR */
             table { width: 100% !important; border-collapse: collapse !important; margin-top: 10px; }
             th, td { border: 1px solid black !important; padding: 8px !important; font-size: 14px !important; color: black !important; }
             .text-sm-print { font-size: 13px !important; }
@@ -39,7 +37,7 @@
 
 <div class="bg-blue-900 text-white p-4 sticky top-0 flex justify-between items-center no-print z-50">
     <h1 id="disp-nama" class="font-bold uppercase italic text-xl">BENGKEL PRO</h1>
-    <div class="text-[9px] bg-green-600 px-2 py-1 rounded uppercase font-bold">V15.21 FINAL</div>
+    <div class="text-[9px] bg-green-600 px-2 py-1 rounded uppercase font-bold">V15.22 FINAL</div>
 </div>
 
 <div class="p-4 no-print">
@@ -84,7 +82,7 @@
     </div>
 
     <div id="menu-riwayat" class="view hidden">
-        <input type="text" id="f-search" placeholder="Cari Nopol/Nota..." oninput="renderRiwayat()" class="w-full mb-2">
+        <input type="text" id="f-search" placeholder="Cari..." oninput="renderRiwayat()" class="w-full mb-2">
         <div class="table-container">
             <table id="table-riwayat">
                 <thead><tr class="bg-gray-100"><th>Tgl</th><th>Nota</th><th>Nopol</th><th>KM</th><th>Merk</th><th>Nama</th><th>Jasa</th><th>Part</th><th>Harga</th><th>Qty</th><th>Total</th><th>Catatan</th></tr></thead>
@@ -124,45 +122,25 @@
         <p id="p-hp-toko" class="text-sm-print font-bold"></p>
     </div>
     <div class="flex justify-between my-4 text-sm-print">
-        <div class="space-y-1">
+        <div>
             <p>Unit: <span id="p-unit" class="font-bold"></span></p>
             <p>No. Polisi: <span id="p-nopol" class="font-bold"></span></p>
             <p>KM: <span id="p-km" class="font-bold"></span></p>
         </div>
-        <div class="text-right space-y-1">
+        <div class="text-right">
             <p id="p-label-tipe" class="font-bold italic underline uppercase text-lg-print"></p>
             <p>No: <span id="p-no" class="font-bold"></span></p>
             <p>Tgl: <span id="p-tgl"></span></p>
         </div>
     </div>
-    
     <table class="w-full">
-        <thead>
-            <tr class="bg-gray-100">
-                <th class="text-left">URAIAN PEKERJAAN / PART</th>
-                <th class="text-right p-harga-col" style="width: 120px;">HARGA</th>
-                <th class="text-center" style="width: 60px;">QTY</th>
-                <th class="text-right p-harga-col" style="width: 140px;">SUBTOTAL</th>
-            </tr>
-        </thead>
+        <thead><tr class="bg-gray-100"><th>URAIAN</th><th class="p-harga-col">HARGA</th><th>QTY</th><th class="p-harga-col">SUBTOTAL</th></tr></thead>
         <tbody id="p-body"></tbody>
-        <tfoot id="p-foot-total">
-            <tr class="font-bold">
-                <td colspan="3" class="text-right p-3">GRAND TOTAL (Rp)</td>
-                <td class="text-right p-3" id="p-total"></td>
-            </tr>
-        </tfoot>
+        <tfoot id="p-foot-total"><tr class="font-bold"><td colspan="3" class="text-right p-3">GRAND TOTAL (Rp)</td><td class="text-right p-3" id="p-total"></td></tr></tfoot>
     </table>
-
-    <div class="text-sm-print mt-8">Catatan: <span id="p-cat" class="italic font-bold"></span></div>
+    <div class="text-sm-print mt-6">Catatan: <span id="p-cat" class="italic font-bold"></span></div>
     <div id="p-box-rek" class="text-sm-print mt-1">Pembayaran: <span id="p-rek" class="font-bold"></span></div>
-    
-    <div class="mt-16">
-        <div class="w-64 text-center">
-            <p class="text-sm-print mb-24">Hormat Kami,</p>
-            <p class="border-t border-black font-bold uppercase pt-1 text-sm-print">( <span id="p-owner"></span> )</p>
-        </div>
-    </div>
+    <div class="mt-12"><div class="w-64 text-center"><p class="text-sm-print mb-20">Hormat Kami,</p><p class="border-t border-black font-bold uppercase pt-1 text-sm-print">( <span id="p-owner"></span> )</p></div></div>
 </div>
 
 <nav class="nav-bottom no-print">
@@ -174,7 +152,7 @@
 </nav>
 
 <script>
-    const KEY = "BENGKEL_PRO_V1521_FINAL";
+    const KEY = "BENGKEL_PRO_V1522_FINAL";
     let db = JSON.parse(localStorage.getItem(KEY)) || { settings: { gsheet: "", nama: "BENGKEL PRO", rek: "", prefix: "DK-", nextNo: 1, alamat: "", hp: "", owner: "" }, transaksi: [], antrean: [] };
 
     function init() {
@@ -189,8 +167,7 @@
         document.getElementById('s-prefix').value = s.prefix;
         document.getElementById('s-next-no').value = s.nextNo;
         document.getElementById('s-gsheet').value = s.gsheet;
-        updateNotaDisplay();
-        addItemRow();
+        updateNotaDisplay(); addItemRow();
     }
 
     function updateNotaDisplay() { document.getElementById('in-nota').value = db.settings.prefix + String(db.settings.nextNo).padStart(3, '0'); }
@@ -198,8 +175,7 @@
     function addItemRow(data = {j:'', p:'', h:0, q:1}) {
         const div = document.createElement('div'); div.className = "grid-item item-row";
         div.innerHTML = `<input type="text" class="i-jasa" value="${data.j}" placeholder="Jasa"><input type="text" class="i-part" value="${data.p}" placeholder="Part"><input type="number" class="i-price" value="${data.h}"><input type="number" class="i-qty" value="${data.q}"><input type="text" readonly class="i-sub bg-gray-50 text-right font-bold" value="0"><button onclick="this.parentElement.remove(); recalc()" class="text-red-500 font-bold">×</button>`;
-        document.getElementById('item-list').appendChild(div);
-        recalc();
+        document.getElementById('item-list').appendChild(div); recalc();
     }
 
     function recalc() {
@@ -219,46 +195,34 @@
         const nopol = document.getElementById('in-nopol').value.toUpperCase();
         if(!nopol) return alert("Nopol Wajib Diisi!");
 
-        let allItems = [];
+        let items = [];
         document.querySelectorAll('.item-row').forEach(row => {
             const j = row.querySelector('.i-jasa').value;
             const p = row.querySelector('.i-part').value;
             const h = parseFloat(row.querySelector('.i-price').value) || 0;
             const q = parseFloat(row.querySelector('.i-qty').value) || 0;
-            if(j || p) allItems.push({j, p, h, q, s:h*q});
+            if(j || p) items.push({j, p, h, q, s:h*q});
         });
 
-        // SORTING: Jasa di atas, Sparepart di bawah
-        const jasa = allItems.filter(i => i.j);
-        const part = allItems.filter(i => i.p);
+        const jasa = items.filter(i => i.j);
+        const part = items.filter(i => i.p);
         const sortedItems = [...jasa, ...part];
-
         const s = db.settings;
         const common = { tgl: document.getElementById('in-tgl').value, noTrx: document.getElementById('in-nota').value, nopol, km: document.getElementById('in-km').value, merk: document.getElementById('in-merk').value, nama: document.getElementById('in-nama').value, catatan: document.getElementById('in-catatan').value };
 
         if(tipe === "NOTA") {
             let batchData = [];
             sortedItems.forEach(i => {
-                const rowData = {...common, uraian: i.j, sparepart: i.p, harga: i.h, qty: i.q, jumlah: i.s};
-                db.transaksi.push(rowData);
-                batchData.push(rowData);
+                const row = {...common, uraian: i.j, sparepart: i.p, harga: i.h, qty: i.q, jumlah: i.s};
+                db.transaksi.push(row);
+                batchData.push(row);
             });
-
-            // KIRIM PAKET MASSAL (BATCH) KE GSHEET
-            if(s.gsheet) {
-                fetch(s.gsheet, { 
-                    method: 'POST', 
-                    mode: 'no-cors', 
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(batchData) 
-                });
-            }
+            if(s.gsheet) fetch(s.gsheet, { method:'POST', mode:'no-cors', body: JSON.stringify(batchData) });
             db.settings.nextNo++;
         } else {
             db.antrean.push({...common, items: sortedItems, tipe, total: document.getElementById('grand-total').innerText });
         }
 
-        // Cetak Nota
         renderCetak(jasa, part, tipe);
         localStorage.setItem(KEY, JSON.stringify(db));
         window.print();
@@ -266,17 +230,10 @@
     }
 
     function renderCetak(jasa, part, tipe) {
-        let html = "";
-        const isWO = (tipe === "WO");
-        if(jasa.length > 0){
-            html += `<tr class="cat-row"><td colspan="4">JASA / SERVICE</td></tr>`;
-            jasa.forEach(i => { html += `<tr><td>${i.j}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.h.toLocaleString('id-ID')}</td><td class="text-center">${i.q}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.s.toLocaleString('id-ID')}</td></tr>`; });
-        }
-        if(part.length > 0){
-            html += `<tr class="cat-row"><td colspan="4">SPAREPART / OLI</td></tr>`;
-            part.forEach(i => { html += `<tr><td>${i.p}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.h.toLocaleString('id-ID')}</td><td class="text-center">${i.q}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.s.toLocaleString('id-ID')}</td></tr>`; });
-        }
-        document.getElementById('p-body').innerHTML = html;
+        let h = ""; const isWO = (tipe === "WO");
+        if(jasa.length > 0){ h += `<tr class="cat-row"><td colspan="4">JASA / SERVICE</td></tr>`; jasa.forEach(i => { h += `<tr><td>${i.j}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.h.toLocaleString()}</td><td class="text-center">${i.q}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.s.toLocaleString()}</td></tr>`; }); }
+        if(part.length > 0){ h += `<tr class="cat-row"><td colspan="4">SPAREPART / OLI</td></tr>`; part.forEach(i => { h += `<tr><td>${i.p}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.h.toLocaleString()}</td><td class="text-center">${i.q}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.s.toLocaleString()}</td></tr>`; }); }
+        document.getElementById('p-body').innerHTML = h;
         const s = db.settings;
         document.getElementById('p-toko').innerText = s.nama;
         document.getElementById('p-alamat-toko').innerText = s.alamat;
@@ -301,19 +258,52 @@
         document.getElementById('tbody-riwayat').innerHTML = f.slice().reverse().map(x => `<tr><td>${x.tgl}</td><td>${x.noTrx}</td><td>${x.nopol}</td><td>${x.km}</td><td>${x.merk}</td><td>${x.nama}</td><td>${x.uraian || ''}</td><td>${x.sparepart || ''}</td><td>${(x.harga||0).toLocaleString()}</td><td>${x.qty}</td><td>${(x.jumlah||0).toLocaleString()}</td><td>${x.catatan || '-'}</td></tr>`).join('');
     }
 
+    function renderAntrean() {
+        const list = document.getElementById('list-antrean'); list.innerHTML = "";
+        db.antrean.forEach((a, idx) => {
+            const div = document.createElement('div'); div.className = "card border-l-4 " + (a.tipe === 'WO' ? 'border-orange-500' : 'border-blue-500');
+            div.innerHTML = `<div class="flex justify-between font-bold text-xs"><span>${a.tipe} - ${a.noTrx}</span><span>${a.tgl}</span></div><div class="my-1 font-black text-lg">${a.nopol} / ${a.merk}</div><div class="text-[10px] text-gray-600">Pelanggan: ${a.nama || '-'} | KM: ${a.km || '-'}</div><div class="text-[10px] bg-gray-100 p-1 mt-2 rounded">${a.catatan || 'Tidak ada catatan'}</div><div class="mt-2 text-right text-blue-700 font-bold">Total: Rp ${a.total}</div><div class="grid grid-cols-2 gap-2 mt-2"><button onclick="loadAntrean(${idx})" class="bg-green-600 text-white py-2 rounded text-[10px] font-bold uppercase">Proses Jadi Nota</button><button onclick="hapusAntrean(${idx})" class="bg-red-500 text-white py-2 rounded text-[10px] font-bold uppercase">Hapus</button></div>`;
+            list.appendChild(div);
+        });
+    }
+
+    function loadAntrean(idx) {
+        const a = db.antrean[idx];
+        document.getElementById('in-nopol').value = a.nopol;
+        document.getElementById('in-merk').value = a.merk;
+        document.getElementById('in-nama').value = a.nama;
+        document.getElementById('in-km').value = a.km;
+        document.getElementById('in-catatan').value = a.catatan;
+        document.getElementById('in-tipe').value = "NOTA";
+        document.getElementById('item-list').innerHTML = `<div class="grid-item text-[10px] font-black text-blue-900 uppercase mb-2 border-b pb-1 text-center"><div>Jasa</div><div>Part</div><div>Harga</div><div>Qty</div><div>Total</div><div></div></div>`;
+        a.items.forEach(i => addItemRow(i));
+        db.antrean.splice(idx, 1); localStorage.setItem(KEY, JSON.stringify(db)); showView('nota', document.querySelectorAll('.nav-btn')[0]);
+    }
+
+    function hapusAntrean(idx) { if(confirm("Hapus antrean ini?")) { db.antrean.splice(idx, 1); localStorage.setItem(KEY, JSON.stringify(db)); renderAntrean(); } }
+
+    function renderLaporan() {
+        const box = document.getElementById('box-laporan');
+        let jasa = 0, part = 0;
+        db.transaksi.forEach(t => { if(t.uraian) jasa += t.jumlah; if(t.sparepart) part += t.jumlah; });
+        box.innerHTML = `<div class="card bg-blue-900 text-white text-center"><p class="text-xs uppercase opacity-70">Total Omzet</p><h3 class="text-3xl font-black font-mono">Rp ${(jasa + part).toLocaleString()}</h3></div><div class="grid grid-cols-2 gap-2"><div class="card border-t-4 border-blue-500"><p class="text-[10px] uppercase text-gray-500">Omzet Jasa</p><p class="text-lg font-bold text-blue-700">Rp ${jasa.toLocaleString()}</p></div><div class="card border-t-4 border-green-500"><p class="text-[10px] uppercase text-gray-500">Omzet Part</p><p class="text-lg font-bold text-green-700">Rp ${part.toLocaleString()}</p></div></div>`;
+    }
+
     function showView(v, el) {
         document.querySelectorAll('.view').forEach(x => x.classList.add('hidden'));
         document.getElementById('menu-' + v).classList.remove('hidden');
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         el.classList.add('active');
         if(v === 'riwayat') renderRiwayat();
+        if(v === 'antrean') renderAntrean();
+        if(v === 'laporan') renderLaporan();
     }
-    
+
     function saveSettings() {
         db.settings = { nama: document.getElementById('s-nama').value.toUpperCase(), alamat: document.getElementById('s-alamat').value, hp: document.getElementById('s-hp').value, owner: document.getElementById('s-owner').value, rek: document.getElementById('s-rek').value, prefix: document.getElementById('s-prefix').value, nextNo: parseInt(document.getElementById('s-next-no').value) || 1, gsheet: document.getElementById('s-gsheet').value };
         localStorage.setItem(KEY, JSON.stringify(db)); alert("Saved!"); location.reload();
     }
-
+    
     function exportData() {
         const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
         const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `backup_bengkel_${new Date().toISOString().slice(0,10)}.json`; a.click();
@@ -324,7 +314,7 @@
         const r = new FileReader(); r.onload = (e) => { db = JSON.parse(e.target.result); localStorage.setItem(KEY, JSON.stringify(db)); location.reload(); }; r.readAsText(f);
     }
 
-    function resetData() { if(confirm("Hapus Permanen Semua Data Lokal?")) { localStorage.clear(); location.reload(); } }
+    function resetData() { if(confirm("Hapus Permanen Semua Data?")) { localStorage.clear(); location.reload(); } }
 
     init();
 </script>
