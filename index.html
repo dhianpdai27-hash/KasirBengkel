@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bengkel Pro - Master Final V15.10</title>
+    <title>Bengkel Pro - Master Final V15.11</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', sans-serif; padding-bottom: 90px; background: #f4f7fa; }
@@ -13,7 +13,6 @@
         .card { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .hidden { display: none; }
         input, select, textarea { border: 1px solid #ccc; padding: 10px; border-radius: 4px; width: 100%; font-size: 14px; }
-        
         .table-container { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid #ddd; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1100px; }
         th, td { border: 1px solid #eee; padding: 10px; text-align: left; }
@@ -21,12 +20,14 @@
         .grid-item { display: grid; grid-template-columns: 2fr 2fr 1.5fr 0.8fr 1.5fr 40px; gap: 5px; margin-bottom: 8px; align-items: center; }
 
         @media print {
+            @page { size: A5 landscape; margin: 5mm; }
             .no-print, .nav-bottom, button, .bg-blue-900, .view { display: none !important; }
-            #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; visibility: visible; }
+            #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; visibility: visible; padding: 0 !important; }
+            .border-b-4 { margin-bottom: 10px !important; padding-bottom: 5px !important; } /* Menaikkan judul */
             table { width: 100% !important; border: 1px solid black !important; min-width: 100% !important; }
-            th, td { border: 1px solid black !important; padding: 6px !important; color: black !important; font-size: 12px !important; }
+            th, td { border: 1px solid black !important; padding: 4px !important; color: black !important; font-size: 11px !important; }
             .no-print-wo { display: none !important; }
-            .category-row td { background: #f3f4f6 !important; font-weight: bold !important; text-align: center !important; border: 1px solid black !important; }
+            .category-row td { background: #eee !important; font-weight: bold !important; text-align: center !important; }
         }
     </style>
 </head>
@@ -34,7 +35,7 @@
 
 <div class="bg-blue-900 text-white p-4 sticky top-0 flex justify-between items-center no-print z-50">
     <h1 id="disp-nama" class="font-bold uppercase italic text-xl">BENGKEL PRO</h1>
-    <div class="text-[9px] bg-green-600 px-2 py-1 rounded uppercase font-bold">V15.10 MASTER</div>
+    <div class="text-[9px] bg-green-600 px-2 py-1 rounded uppercase font-bold">V15.11 MASTER</div>
 </div>
 
 <div class="p-4 no-print">
@@ -53,7 +54,7 @@
                 <input type="text" id="in-nopol" placeholder="NO POLISI" class="uppercase font-bold text-center">
             </div>
             <div class="grid grid-cols-2 gap-2 mb-2">
-                <input type="text" id="in-nama" placeholder="NAMA CUSTOMER (TIDAK TAMPIL DI NOTA)">
+                <input type="text" id="in-nama" placeholder="NAMA CUSTOMER">
                 <input type="text" id="in-merk" placeholder="MERK MOBIL">
             </div>
             <input type="number" id="in-km" placeholder="KILOMETER (KM)">
@@ -68,7 +69,6 @@
             <button onclick="addItemRow()" class="text-blue-600 font-bold text-xs mt-2">+ TAMBAH ITEM</button>
             <textarea id="in-catatan" rows="2" placeholder="Catatan/Keluhan..." class="mt-4 text-xs w-full"></textarea>
             <div class="mt-4 p-4 bg-slate-900 text-white rounded flex justify-between items-center">
-                <span class="text-xs opacity-70 italic">Grand Total</span>
                 <span id="grand-total" class="text-2xl font-mono text-green-400 font-bold">0</span>
             </div>
         </div>
@@ -86,7 +86,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Tgl</th><th>Nota</th><th>Nopol</th><th>Merk</th><th>Jasa</th><th>Part</th><th>Harga</th><th>Qty</th><th>Jumlah</th><th>Catatan</th>
+                        <th>Tgl</th><th>Nota</th><th>Nopol</th><th>Nama</th><th>Merk</th><th>Jasa</th><th>Part</th><th>Harga</th><th>Qty</th><th>Jumlah</th><th>Catatan</th>
                     </tr>
                 </thead>
                 <tbody id="tbody-riwayat"></tbody>
@@ -106,52 +106,63 @@
             <input type="text" id="s-hp" placeholder="No HP">
             <input type="text" id="s-owner" placeholder="Owner">
             <input type="text" id="s-rek" placeholder="Rekening Pembayaran">
-            <input type="text" id="s-prefix" placeholder="Prefix (DK012026-)">
-            <input type="number" id="s-next-no" placeholder="No Urut (1)">
+            <div class="grid grid-cols-2 gap-2">
+                <input type="text" id="s-prefix" placeholder="Prefix">
+                <input type="number" id="s-next-no" placeholder="No Urut">
+            </div>
             <input type="text" id="s-gsheet" placeholder="URL Google Apps Script">
             <button onclick="saveSettings()" class="w-full bg-slate-800 text-white py-3 rounded font-bold uppercase text-xs">Simpan Master Pengaturan</button>
         </div>
+        <div class="card">
+            <label class="text-[10px] font-bold text-gray-400 uppercase">Backup & Restore</label>
+            <div class="grid grid-cols-2 gap-2 mt-2">
+                <button onclick="exportData()" class="bg-green-600 text-white py-2 rounded text-[10px] font-bold uppercase">Export JSON</button>
+                <button onclick="document.getElementById('importFile').click()" class="bg-orange-500 text-white py-2 rounded text-[10px] font-bold uppercase">Import JSON</button>
+                <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
+            </div>
+        </div>
+        <button onclick="resetData()" class="text-red-500 text-[10px] mt-8 block w-full text-center underline italic opacity-50">Hapus Data Lokal</button>
     </div>
 </div>
 
-<div id="print-area" class="hidden p-8 bg-white text-black">
-    <div class="text-center border-b-4 border-double border-black pb-4 mb-4">
-        <h2 id="p-toko" class="text-2xl font-bold uppercase"></h2>
-        <p id="p-alamat-toko" class="text-xs"></p>
-        <p id="p-hp-toko" class="text-xs"></p>
+<div id="print-area" class="hidden p-4 bg-white text-black">
+    <div class="text-center border-b-2 border-black pb-2 mb-2">
+        <h2 id="p-toko" class="text-xl font-bold uppercase"></h2>
+        <p id="p-alamat-toko" class="text-[10px]"></p>
+        <p id="p-hp-toko" class="text-[10px]"></p>
     </div>
-    <div class="flex justify-between mb-4 text-[12px]">
+    <div class="flex justify-between mb-2 text-[11px]">
         <div>
-            <p>Unit: <span id="p-unit" class="font-bold"></span></p>
-            <p>No. Polisi: <span id="p-nopol" class="font-bold"></span></p>
+            <p>Unit: <span id="p-unit" class="font-bold"></span> | Nopol: <span id="p-nopol" class="font-bold"></span></p>
             <p>KM: <span id="p-km"></span></p>
         </div>
         <div class="text-right">
-            <h2 id="p-label-tipe" class="font-bold underline text-lg italic uppercase"></h2>
-            <p>No: <span id="p-no"></span></p>
-            <p>Tgl: <span id="p-tgl"></span></p>
+            <h2 id="p-label-tipe" class="font-bold underline italic uppercase"></h2>
+            <p>No: <span id="p-no"></span> | Tgl: <span id="p-tgl"></span></p>
         </div>
     </div>
-    <table class="w-full border border-black mb-4">
-        <thead><tr class="bg-gray-100 italic">
-            <th class="border border-black p-2">URAIAN PEKERJAAN / PART</th>
-            <th class="border border-black p-2 text-right no-print-wo">HARGA</th>
-            <th class="border border-black p-2 text-center">QTY</th>
-            <th class="border border-black p-2 text-right no-print-wo">SUBTOTAL</th>
-        </tr></thead>
+    <table class="w-full border border-black mb-2">
+        <thead>
+            <tr class="bg-gray-100 italic">
+                <th class="border border-black p-1">URAIAN PEKERJAAN / PART</th>
+                <th class="border border-black p-1 text-right no-print-wo">HARGA</th>
+                <th class="border border-black p-1 text-center">QTY</th>
+                <th class="border border-black p-1 text-right no-print-wo">SUBTOTAL</th>
+            </tr>
+        </thead>
         <tbody id="p-body"></tbody>
-        <tfoot id="p-foot-total"><tr>
-            <th colspan="3" class="text-right border border-black p-2 font-bold uppercase">Grand Total</th>
-            <th class="text-right border border-black p-2 font-bold" id="p-total"></th>
-        </tr></tfoot>
+        <tfoot id="p-foot-total">
+            <tr>
+                <th colspan="3" class="text-right border border-black p-1 font-bold uppercase">Grand Total</th>
+                <th class="text-right border border-black p-1 font-bold" id="p-total"></th>
+            </tr>
+        </tfoot>
     </table>
-    <div class="text-[12px] mb-2 font-bold">Catatan: <span id="p-cat" class="italic font-normal"></span></div>
-    <div id="p-box-rek" class="text-[11px] mb-6 p-2 border border-dashed border-gray-400 bg-gray-50">
-        Pembayaran Transfer: <span id="p-rek" class="font-bold"></span>
-    </div>
-    <div class="flex justify-between text-center mt-12 text-[12px]">
-        <div class="w-40 border-t border-black pt-1"><p>Hormat Kami,</p><br><p>( <span id="p-owner"></span> )</p></div>
-        <div class="w-40 border-t border-black pt-1"><p>Pelanggan,</p><br><p>( ............ )</p></div>
+    <div class="text-[10px] mb-1">Catatan: <span id="p-cat"></span></div>
+    <div id="p-box-rek" class="text-[10px] mb-4">Transfer: <span id="p-rek" class="font-bold"></span></div>
+    <div class="flex justify-between text-center mt-6 text-[10px]">
+        <div class="w-32 border-t border-black pt-1">Hormat Kami, <br><br>( <span id="p-owner"></span> )</div>
+        <div class="w-32 border-t border-black pt-1">Pelanggan, <br><br>( ............ )</div>
     </div>
 </div>
 
@@ -164,7 +175,7 @@
 </nav>
 
 <script>
-    const KEY = "BENGKEL_PRO_V1510_MASTER";
+    const KEY = "BENGKEL_PRO_V1511_MASTER";
     let db = JSON.parse(localStorage.getItem(KEY)) || { 
         settings: { gsheet: "", nama: "BENGKEL PRO", rek: "", prefix: "DK012026-", nextNo: 1 }, 
         transaksi: [], 
@@ -193,13 +204,7 @@
 
     function addItemRow(data = {j:'', p:'', h:0, q:1}) {
         const div = document.createElement('div'); div.className = "grid-item item-row";
-        div.innerHTML = `
-            <input type="text" class="i-jasa" value="${data.j}" placeholder="Jasa">
-            <input type="text" class="i-part" value="${data.p}" placeholder="Part">
-            <input type="number" class="i-price" value="${data.h}">
-            <input type="number" class="i-qty" value="${data.q}">
-            <input type="text" readonly class="i-sub bg-gray-50 text-right font-bold" value="0">
-            <button onclick="this.parentElement.remove(); recalc()" class="text-red-500 font-bold">×</button>`;
+        div.innerHTML = `<input type="text" class="i-jasa" value="${data.j}" placeholder="Jasa"><input type="text" class="i-part" value="${data.p}" placeholder="Part"><input type="number" class="i-price" value="${data.h}"><input type="number" class="i-qty" value="${data.q}"><input type="text" readonly class="i-sub bg-gray-50 text-right font-bold" value="0"><button onclick="this.parentElement.remove(); recalc()" class="text-red-500 font-bold">×</button>`;
         document.getElementById('item-list').appendChild(div);
         recalc();
     }
@@ -227,33 +232,30 @@
             const p = row.querySelector('.i-part').value;
             const h = parseFloat(row.querySelector('.i-price').value) || 0;
             const q = parseFloat(row.querySelector('.i-qty').value) || 0;
-            if(j) jasaItems.push({ name: j, h: h, q: q, sub: h*q });
-            if(p) partItems.push({ name: p, h: h, q: q, sub: h*q });
+            if(j) jasaItems.push({ name: j, h, q, sub: h*q });
+            if(p) partItems.push({ name: p, h, q, sub: h*q });
         });
 
         let rowsHtml = "";
         if(jasaItems.length > 0) {
-            rowsHtml += `<tr class="category-row"><td colspan="4" class="p-1 border border-black bg-gray-100 font-bold text-center">--- JASA / SERVICE ---</td></tr>`;
+            rowsHtml += `<tr class="category-row"><td colspan="4" class="p-1 border border-black bg-gray-100 font-bold text-center italic">JASA / SERVICE</td></tr>`;
             jasaItems.forEach(it => {
-                rowsHtml += `<tr><td class="border border-black p-2 text-xs">${it.name}</td><td class="border border-black p-2 text-right text-xs no-print-wo">${it.h.toLocaleString()}</td><td class="border border-black p-2 text-center text-xs">${it.q}</td><td class="border border-black p-2 text-right text-xs no-print-wo">${it.sub.toLocaleString()}</td></tr>`;
+                rowsHtml += `<tr><td class="border border-black p-1">${it.name}</td><td class="border border-black p-1 text-right no-print-wo">${it.h.toLocaleString()}</td><td class="border border-black p-1 text-center">${it.q}</td><td class="border border-black p-1 text-right no-print-wo">${it.sub.toLocaleString()}</td></tr>`;
             });
         }
         if(partItems.length > 0) {
-            rowsHtml += `<tr class="category-row"><td colspan="4" class="p-1 border border-black bg-gray-100 font-bold text-center">--- SPAREPART ---</td></tr>`;
+            rowsHtml += `<tr class="category-row"><td colspan="4" class="p-1 border border-black bg-gray-100 font-bold text-center italic">SPAREPART / OLI</td></tr>`;
             partItems.forEach(it => {
-                rowsHtml += `<tr><td class="border border-black p-2 text-xs">${it.name}</td><td class="border border-black p-2 text-right text-xs no-print-wo">${it.h.toLocaleString()}</td><td class="border border-black p-2 text-center text-xs">${it.q}</td><td class="border border-black p-2 text-right text-xs no-print-wo">${it.sub.toLocaleString()}</td></tr>`;
+                rowsHtml += `<tr><td class="border border-black p-1">${it.name}</td><td class="border border-black p-1 text-right no-print-wo">${it.h.toLocaleString()}</td><td class="border border-black p-1 text-center">${it.q}</td><td class="border border-black p-1 text-right no-print-wo">${it.sub.toLocaleString()}</td></tr>`;
             });
         }
 
-        // Tampilan khusus WO
         if(tipe === "WO") {
             document.querySelectorAll('.no-print-wo').forEach(el => el.style.display = 'none');
             document.getElementById('p-foot-total').style.display = 'none';
-            document.getElementById('p-box-rek').style.display = 'none';
         } else {
             document.querySelectorAll('.no-print-wo').forEach(el => el.style.display = 'table-cell');
             document.getElementById('p-foot-total').style.display = 'table-footer-group';
-            document.getElementById('p-box-rek').style.display = 'block';
         }
 
         document.getElementById('p-toko').innerText = db.settings.nama;
@@ -274,15 +276,20 @@
         const common = { tgl: document.getElementById('in-tgl').value, noTrx: document.getElementById('in-nota').value, nopol: nopol, nama: document.getElementById('in-nama').value, merk: document.getElementById('in-merk').value, catatan: document.getElementById('in-catatan').value };
 
         if(tipe === "NOTA") {
-            [...jasaItems, ...partItems].forEach(it => {
-                const payload = { ...common, uraian: it.name.includes(jasaItems[0]?.name) ? it.name : "", sparepart: it.name.includes(partItems[0]?.name) ? it.name : "", harga: it.h, qty: it.q, jumlah: it.sub };
-                if(db.settings.gsheet) fetch(db.settings.gsheet, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-                db.transaksi.push(payload);
+            jasaItems.forEach(it => {
+                const p = { ...common, uraian: it.name, sparepart: "", harga: it.h, qty: it.q, jumlah: it.sub };
+                db.transaksi.push(p);
+                if(db.settings.gsheet) fetch(db.settings.gsheet, { method: 'POST', mode: 'no-cors', body: JSON.stringify(p) });
+            });
+            partItems.forEach(it => {
+                const p = { ...common, uraian: "", sparepart: it.name, harga: it.h, qty: it.q, jumlah: it.sub };
+                db.transaksi.push(p);
+                if(db.settings.gsheet) fetch(db.settings.gsheet, { method: 'POST', mode: 'no-cors', body: JSON.stringify(p) });
             });
             db.settings.nextNo++;
         } else {
-            const all = [...jasaItems.map(i=>({j:i.name, p:"", h:i.h, q:i.q})), ...partItems.map(i=>({j:"", p:i.name, h:i.h, q:i.q}))];
-            db.antrean.push({...common, items: all, tipe, total: document.getElementById('grand-total').innerText});
+            const allItems = [...jasaItems.map(i=>({j:i.name, p:"", h:i.h, q:i.q})), ...partItems.map(i=>({j:"", p:i.name, h:i.h, q:i.q}))];
+            db.antrean.push({...common, items: allItems, tipe, total: document.getElementById('grand-total').innerText});
         }
 
         localStorage.setItem(KEY, JSON.stringify(db));
@@ -292,8 +299,8 @@
 
     function renderRiwayat() {
         const s = document.getElementById('f-search').value.toLowerCase();
-        const f = db.transaksi.filter(x => (x.nopol + x.noTrx).toLowerCase().includes(s));
-        document.getElementById('tbody-riwayat').innerHTML = f.slice().reverse().map(x => `<tr><td>${x.tgl}</td><td>${x.noTrx}</td><td>${x.nopol}</td><td>${x.merk}</td><td>${x.uraian}</td><td>${x.sparepart}</td><td>${x.harga.toLocaleString()}</td><td>${x.qty}</td><td>${x.jumlah.toLocaleString()}</td><td>${x.catatan || '-'}</td></tr>`).join('');
+        const f = db.transaksi.filter(x => (x.nopol + x.nama + x.noTrx).toLowerCase().includes(s));
+        document.getElementById('tbody-riwayat').innerHTML = f.slice().reverse().map(x => `<tr><td>${x.tgl}</td><td>${x.noTrx}</td><td>${x.nopol}</td><td>${x.nama}</td><td>${x.merk}</td><td>${x.uraian}</td><td>${x.sparepart}</td><td>${x.harga.toLocaleString()}</td><td>${x.qty}</td><td>${x.jumlah.toLocaleString()}</td><td>${x.catatan || '-'}</td></tr>`).join('');
     }
 
     function renderLaporan() {
@@ -303,12 +310,13 @@
     }
 
     function renderAntrean() {
-        document.getElementById('list-antrean').innerHTML = db.antrean.map(x => `<div class="card flex justify-between items-center border-l-4 border-orange-500"><div><b class="text-blue-700">${x.nopol}</b> - ${x.merk} (${x.tipe})<br><small>Total: ${x.total}</small></div><div class="flex gap-2"><button onclick="loadAntrean('${x.noTrx}')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold uppercase">Proses</button><button onclick="hapusAntrean('${x.noTrx}')" class="text-red-500 text-xs font-bold">×</button></div></div>`).join('') || '<p class="text-center italic text-gray-400">Antrean Kosong</p>';
+        document.getElementById('list-antrean').innerHTML = db.antrean.map(x => `<div class="card flex justify-between items-center border-l-4 border-orange-500"><div><b class="text-blue-700">${x.nopol}</b> - ${x.merk}<br><small>Total: ${x.total}</small></div><div class="flex gap-2"><button onclick="loadAntrean('${x.noTrx}')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold uppercase">Proses</button><button onclick="hapusAntrean('${x.noTrx}')" class="text-red-500 text-xs font-bold">×</button></div></div>`).join('') || '<p class="text-center italic text-gray-400">Antrean Kosong</p>';
     }
 
     function loadAntrean(noTrx) {
         const x = db.antrean.find(i => i.noTrx === noTrx); if(!x) return;
         document.getElementById('in-nopol').value = x.nopol;
+        document.getElementById('in-nama').value = x.nama;
         document.getElementById('in-merk').value = x.merk;
         document.getElementById('in-catatan').value = x.catatan;
         document.getElementById('item-list').innerHTML = '<div class="grid-item text-[10px] font-black text-blue-900 uppercase mb-2 border-b pb-1"><div>Jasa</div><div>Part</div><div>Harga</div><div>Qty</div><div>Total</div><div></div></div>';
@@ -321,7 +329,28 @@
     function saveSettings() {
         db.settings = { nama: document.getElementById('s-nama').value.toUpperCase(), alamat: document.getElementById('s-alamat').value, hp: document.getElementById('s-hp').value, owner: document.getElementById('s-owner').value, rek: document.getElementById('s-rek').value, prefix: document.getElementById('s-prefix').value, nextNo: parseInt(document.getElementById('s-next-no').value) || 1, gsheet: document.getElementById('s-gsheet').value };
         localStorage.setItem(KEY, JSON.stringify(db));
-        alert("Master Settings Saved!"); location.reload();
+        alert("Settings Saved!"); location.reload();
+    }
+
+    function exportData() {
+        const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `backup_bengkel_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+    }
+
+    function importData(event) {
+        const file = event.target.files[0]; if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                db = JSON.parse(e.target.result);
+                localStorage.setItem(KEY, JSON.stringify(db));
+                alert("Restore Success!"); location.reload();
+            } catch(err) { alert("Invalid File!"); }
+        };
+        reader.readAsText(file);
     }
 
     function showView(v, el) {
@@ -334,6 +363,7 @@
         if(v === 'laporan') renderLaporan();
     }
 
+    function resetData() { if(confirm("Hapus Permanen?")) { localStorage.clear(); location.reload(); } }
     function hapusAntrean(noTrx) { if(confirm("Hapus?")) { db.antrean = db.antrean.filter(i => i.noTrx !== noTrx); localStorage.setItem(KEY, JSON.stringify(db)); renderAntrean(); } }
     init();
 </script>
