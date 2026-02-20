@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bengkel Pro - Master Final V15.7</title>
+    <title>Bengkel Pro - Master Final V15.8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', sans-serif; padding-bottom: 90px; background: #f4f7fa; }
@@ -24,7 +24,8 @@
             #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; visibility: visible; }
             table { width: 100% !important; border: 1px solid black !important; min-width: 100% !important; }
             th, td { border: 1px solid black !important; padding: 6px !important; color: black !important; font-size: 12px !important; }
-            .no-print-wo { display: none !important; } /* Sembunyikan harga di WO */
+            .no-print-wo { display: none !important; }
+            .category-row { background: #eee !important; font-weight: bold !important; text-transform: uppercase !important; }
         }
     </style>
 </head>
@@ -32,14 +33,14 @@
 
 <div class="bg-blue-900 text-white p-4 sticky top-0 flex justify-between items-center no-print z-50">
     <h1 id="disp-nama" class="font-bold uppercase italic text-xl">BENGKEL PRO</h1>
-    <div class="text-[9px] bg-green-600 px-2 py-1 rounded uppercase">V15.7 Master</div>
+    <div class="text-[9px] bg-green-600 px-2 py-1 rounded uppercase font-bold">V15.8 MASTER</div>
 </div>
 
 <div class="p-4 no-print">
     <div id="menu-nota" class="view">
         <div class="card">
             <div class="grid grid-cols-2 gap-2 mb-2">
-                <select id="in-tipe" class="font-bold text-blue-700 bg-blue-50" onchange="toggleNotaDisplay()">
+                <select id="in-tipe" class="font-bold text-blue-700 bg-blue-50">
                     <option value="NOTA">NOTA (OMZET)</option>
                     <option value="WO">WORKING ORDER</option>
                     <option value="ESTIMASI">ESTIMASI</option>
@@ -136,8 +137,8 @@
     </div>
     <div class="flex justify-between mb-4 text-[12px]">
         <div>
-            <p>Customer: <span id="p-nama" class="font-bold"></span></p>
-            <p>Unit: <span id="p-unit"></span> (<span id="p-nopol"></span>)</p>
+            <p>Unit: <span id="p-unit" class="font-bold"></span></p>
+            <p>No. Polisi: <span id="p-nopol" class="font-bold"></span></p>
             <p>KM: <span id="p-km"></span></p>
         </div>
         <div class="text-right">
@@ -148,7 +149,7 @@
     </div>
     <table class="w-full border border-black mb-4">
         <thead><tr class="bg-gray-100 italic">
-            <th class="border border-black p-2">URAIAN JASA / SPAREPART</th>
+            <th class="border border-black p-2">URAIAN PEKERJAAN / PART</th>
             <th class="border border-black p-2 text-right no-print-wo">HARGA</th>
             <th class="border border-black p-2 text-center">QTY</th>
             <th class="border border-black p-2 text-right no-print-wo">SUBTOTAL</th>
@@ -178,11 +179,9 @@
 </nav>
 
 <script>
-    const DEFAULT_GS_URL = "";
-    const KEY = "BENGKEL_PRO_V157_MASTER";
-    
+    const KEY = "BENGKEL_PRO_V158_MASTER";
     let db = JSON.parse(localStorage.getItem(KEY)) || { 
-        settings: { gsheet: DEFAULT_GS_URL, nama: "BENGKEL PRO", rek: "", prefix: "DK012026-", nextNo: 1 }, 
+        settings: { gsheet: "", nama: "BENGKEL PRO", rek: "", prefix: "DK012026-", nextNo: 1 }, 
         transaksi: [], 
         antrean: [] 
     };
@@ -190,17 +189,15 @@
     function init() {
         document.getElementById('in-tgl').valueAsDate = new Date();
         updateNotaDisplay();
-        document.getElementById('disp-nama').innerText = db.settings.nama || "BENGKEL PRO";
-        
-        document.getElementById('s-nama').value = db.settings.nama || "";
+        document.getElementById('disp-nama').innerText = db.settings.nama;
+        document.getElementById('s-nama').value = db.settings.nama;
         document.getElementById('s-alamat').value = db.settings.alamat || "";
         document.getElementById('s-hp').value = db.settings.hp || "";
         document.getElementById('s-owner').value = db.settings.owner || "";
         document.getElementById('s-rek').value = db.settings.rek || "";
-        document.getElementById('s-prefix').value = db.settings.prefix || "DK012026-";
-        document.getElementById('s-next-no').value = db.settings.nextNo || 1;
-        document.getElementById('s-gsheet').value = db.settings.gsheet || "";
-        
+        document.getElementById('s-prefix').value = db.settings.prefix;
+        document.getElementById('s-next-no').value = db.settings.nextNo;
+        document.getElementById('s-gsheet').value = db.settings.gsheet;
         addItemRow();
     }
 
@@ -239,27 +236,30 @@
         const nopol = document.getElementById('in-nopol').value.toUpperCase();
         if(!nopol) return alert("Nomor Polisi Wajib Diisi!");
 
-        let items = []; let rowsHtml = "";
+        let jasaItems = []; let partItems = [];
         document.querySelectorAll('.item-row').forEach(row => {
             const j = row.querySelector('.i-jasa').value;
             const p = row.querySelector('.i-part').value;
             const h = parseFloat(row.querySelector('.i-price').value) || 0;
             const q = parseFloat(row.querySelector('.i-qty').value) || 0;
-            if(j || p) {
-                items.push({ j, p, h, q, sub: h*q });
-                const hargaDisplay = tipe === "WO" ? "" : h.toLocaleString();
-                const subDisplay = tipe === "WO" ? "" : (h*q).toLocaleString();
-                
-                rowsHtml += `<tr>
-                    <td class="border border-black p-2 text-xs">${j} ${p}</td>
-                    <td class="border border-black p-2 text-right text-xs no-print-wo">${hargaDisplay}</td>
-                    <td class="border border-black p-2 text-center text-xs">${q}</td>
-                    <td class="border border-black p-2 text-right text-xs no-print-wo">${subDisplay}</td>
-                </tr>`;
-            }
+            if(j) jasaItems.push({ name: j, h, q, sub: h*q });
+            if(p) partItems.push({ name: p, h, q, sub: h*q });
         });
 
-        // Tampilan khusus WO vs Nota
+        let rowsHtml = "";
+        if(jasaItems.length > 0) {
+            rowsHtml += `<tr class="category-row"><td colspan="4" class="p-2 border border-black bg-gray-100 font-bold">JASA / SERVICE</td></tr>`;
+            jasaItems.forEach(it => {
+                rowsHtml += `<tr><td class="border border-black p-2 text-xs">${it.name}</td><td class="border border-black p-2 text-right text-xs no-print-wo">${it.h.toLocaleString()}</td><td class="border border-black p-2 text-center text-xs">${it.q}</td><td class="border border-black p-2 text-right text-xs no-print-wo">${it.sub.toLocaleString()}</td></tr>`;
+            });
+        }
+        if(partItems.length > 0) {
+            rowsHtml += `<tr class="category-row"><td colspan="4" class="p-2 border border-black bg-gray-100 font-bold">SPAREPART</td></tr>`;
+            partItems.forEach(it => {
+                rowsHtml += `<tr><td class="border border-black p-2 text-xs">${it.name}</td><td class="border border-black p-2 text-right text-xs no-print-wo">${it.h.toLocaleString()}</td><td class="border border-black p-2 text-center text-xs">${it.q}</td><td class="border border-black p-2 text-right text-xs no-print-wo">${it.sub.toLocaleString()}</td></tr>`;
+            });
+        }
+
         if(tipe === "WO") {
             document.querySelectorAll('.no-print-wo').forEach(el => el.style.display = 'none');
             document.getElementById('p-foot-total').style.display = 'none';
@@ -276,7 +276,6 @@
         document.getElementById('p-owner').innerText = db.settings.owner;
         document.getElementById('p-rek').innerText = db.settings.rek;
         document.getElementById('p-label-tipe').innerText = tipe;
-        document.getElementById('p-nama').innerText = document.getElementById('in-nama').value;
         document.getElementById('p-unit').innerText = document.getElementById('in-merk').value;
         document.getElementById('p-nopol').innerText = nopol;
         document.getElementById('p-km').innerText = document.getElementById('in-km').value;
@@ -286,24 +285,23 @@
         document.getElementById('p-body').innerHTML = rowsHtml;
         document.getElementById('p-total').innerText = document.getElementById('grand-total').innerText;
 
-        const common = {
-            tgl: document.getElementById('in-tgl').value,
-            noTrx: document.getElementById('in-nota').value,
-            nopol: nopol,
-            nama: document.getElementById('in-nama').value,
-            merk: document.getElementById('in-merk').value,
-            catatan: document.getElementById('in-catatan').value
-        };
+        const common = { tgl: document.getElementById('in-tgl').value, noTrx: document.getElementById('in-nota').value, nopol: nopol, nama: document.getElementById('in-nama').value, merk: document.getElementById('in-merk').value, catatan: document.getElementById('in-catatan').value };
 
         if(tipe === "NOTA") {
-            items.forEach(it => {
-                const payload = { ...common, uraian: it.j, sparepart: it.p, harga: it.h, qty: it.q, jumlah: it.sub };
-                db.transaksi.push(payload);
-                if(db.settings.gsheet) fetch(db.settings.gsheet, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            jasaItems.forEach(it => {
+                const p = { ...common, uraian: it.name, sparepart: "", harga: it.h, qty: it.q, jumlah: it.sub };
+                db.transaksi.push(p);
+                if(db.settings.gsheet) fetch(db.settings.gsheet, { method: 'POST', mode: 'no-cors', body: JSON.stringify(p) });
             });
-            db.settings.nextNo++; // Increment nota hanya jika NOTA (Omzet)
+            partItems.forEach(it => {
+                const p = { ...common, uraian: "", sparepart: it.name, harga: it.h, qty: it.q, jumlah: it.sub };
+                db.transaksi.push(p);
+                if(db.settings.gsheet) fetch(db.settings.gsheet, { method: 'POST', mode: 'no-cors', body: JSON.stringify(p) });
+            });
+            db.settings.nextNo++;
         } else {
-            db.antrean.push({...common, items, tipe, total: document.getElementById('grand-total').innerText});
+            const allItems = [...jasaItems.map(i=>({j:i.name, p:"", h:i.h, q:i.q})), ...partItems.map(i=>({j:"", p:i.name, h:i.h, q:i.q}))];
+            db.antrean.push({...common, items: allItems, tipe, total: document.getElementById('grand-total').innerText});
         }
 
         localStorage.setItem(KEY, JSON.stringify(db));
@@ -314,38 +312,21 @@
     function renderRiwayat() {
         const s = document.getElementById('f-search').value.toLowerCase();
         const f = db.transaksi.filter(x => (x.nopol + x.nama + x.noTrx).toLowerCase().includes(s));
-        document.getElementById('tbody-riwayat').innerHTML = f.slice().reverse().map(x => `
-            <tr>
-                <td>${x.tgl}</td><td>${x.noTrx}</td><td>${x.nopol}</td><td>${x.nama}</td>
-                <td>${x.merk}</td><td>${x.uraian}</td><td>${x.sparepart}</td>
-                <td>${x.harga.toLocaleString()}</td><td>${x.qty}</td>
-                <td>${x.jumlah.toLocaleString()}</td><td>${x.catatan || '-'}</td>
-            </tr>
-        `).join('');
+        document.getElementById('tbody-riwayat').innerHTML = f.slice().reverse().map(x => `<tr><td>${x.tgl}</td><td>${x.noTrx}</td><td>${x.nopol}</td><td>${x.nama}</td><td>${x.merk}</td><td>${x.uraian}</td><td>${x.sparepart}</td><td>${x.harga.toLocaleString()}</td><td>${x.qty}</td><td>${x.jumlah.toLocaleString()}</td><td>${x.catatan || '-'}</td></tr>`).join('');
     }
 
     function renderLaporan() {
         const tJasa = db.transaksi.filter(x => x.uraian !== "").reduce((a,c) => a + (parseFloat(c.jumlah)||0), 0);
         const tPart = db.transaksi.filter(x => x.sparepart !== "").reduce((a,c) => a + (parseFloat(c.jumlah)||0), 0);
-        document.getElementById('box-laporan').innerHTML = `
-            <div class="card border-l-8 border-blue-600"><p class="text-[10px] font-bold uppercase">Laporan Jasa</p><h2 class="text-2xl font-black text-blue-700">Rp ${tJasa.toLocaleString()}</h2></div>
-            <div class="card border-l-8 border-green-600"><p class="text-[10px] font-bold uppercase">Laporan Sparepart</p><h2 class="text-2xl font-black text-green-700">Rp ${tPart.toLocaleString()}</h2></div>
-            <div class="card bg-slate-900 text-white"><p class="text-[10px] opacity-70 italic uppercase">Total Omzet</p><h2 class="text-3xl font-black text-green-400">Rp ${(tJasa+tPart).toLocaleString()}</h2></div>
-        `;
+        document.getElementById('box-laporan').innerHTML = `<div class="card border-l-8 border-blue-600"><p class="text-[10px] font-bold uppercase">Laporan Jasa</p><h2 class="text-2xl font-black text-blue-700">Rp ${tJasa.toLocaleString()}</h2></div><div class="card border-l-8 border-green-600"><p class="text-[10px] font-bold uppercase">Laporan Sparepart</p><h2 class="text-2xl font-black text-green-700">Rp ${tPart.toLocaleString()}</h2></div><div class="card bg-slate-900 text-white"><p class="text-[10px] opacity-70 italic uppercase">Total Omzet</p><h2 class="text-3xl font-black text-green-400">Rp ${(tJasa+tPart).toLocaleString()}</h2></div>`;
     }
 
     function renderAntrean() {
-        document.getElementById('list-antrean').innerHTML = db.antrean.map(x => `
-            <div class="card flex justify-between items-center border-l-4 border-orange-500">
-                <div><b class="text-blue-700">${x.nopol}</b> - ${x.nama} (${x.tipe})<br><small>Total: ${x.total}</small></div>
-                <div class="flex gap-2"><button onclick="loadAntrean('${x.noTrx}')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold uppercase">Proses</button><button onclick="hapusAntrean('${x.noTrx}')" class="text-red-500 text-xs font-bold">×</button></div>
-            </div>
-        `).join('') || '<p class="text-center italic text-gray-400">Antrean Kosong</p>';
+        document.getElementById('list-antrean').innerHTML = db.antrean.map(x => `<div class="card flex justify-between items-center border-l-4 border-orange-500"><div><b class="text-blue-700">${x.nopol}</b> - ${x.nama} (${x.tipe})<br><small>Total: ${x.total}</small></div><div class="flex gap-2"><button onclick="loadAntrean('${x.noTrx}')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold uppercase">Proses</button><button onclick="hapusAntrean('${x.noTrx}')" class="text-red-500 text-xs font-bold">×</button></div></div>`).join('') || '<p class="text-center italic text-gray-400">Antrean Kosong</p>';
     }
 
     function loadAntrean(noTrx) {
-        const x = db.antrean.find(i => i.noTrx === noTrx);
-        if(!x) return;
+        const x = db.antrean.find(i => i.noTrx === noTrx); if(!x) return;
         document.getElementById('in-nopol').value = x.nopol;
         document.getElementById('in-nama').value = x.nama;
         document.getElementById('in-merk').value = x.merk;
@@ -358,40 +339,27 @@
     }
 
     function saveSettings() {
-        db.settings = { 
-            nama: document.getElementById('s-nama').value.toUpperCase(), 
-            alamat: document.getElementById('s-alamat').value, 
-            hp: document.getElementById('s-hp').value, 
-            owner: document.getElementById('s-owner').value, 
-            rek: document.getElementById('s-rek').value,
-            prefix: document.getElementById('s-prefix').value,
-            nextNo: parseInt(document.getElementById('s-next-no').value) || 1,
-            gsheet: document.getElementById('s-gsheet').value 
-        };
+        db.settings = { nama: document.getElementById('s-nama').value.toUpperCase(), alamat: document.getElementById('s-alamat').value, hp: document.getElementById('s-hp').value, owner: document.getElementById('s-owner').value, rek: document.getElementById('s-rek').value, prefix: document.getElementById('s-prefix').value, nextNo: parseInt(document.getElementById('s-next-no').value) || 1, gsheet: document.getElementById('s-gsheet').value };
         localStorage.setItem(KEY, JSON.stringify(db));
-        alert("Master Settings Berhasil Disimpan!"); location.reload();
+        alert("Master Settings Saved!"); location.reload();
     }
 
     function exportData() {
         const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
-        a.download = `backup_bengkel_pro_${new Date().toISOString().slice(0,10)}.json`;
+        a.download = `backup_bengkel_${new Date().toISOString().slice(0,10)}.json`;
         a.click();
     }
 
     function importData(event) {
-        const file = event.target.files[0];
-        if(!file) return;
+        const file = event.target.files[0]; if(!file) return;
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
-                const imported = JSON.parse(e.target.result);
-                if(confirm("Timpa data lokal dengan backup ini?")) {
-                    db = imported;
-                    localStorage.setItem(KEY, JSON.stringify(db));
-                    alert("Data Berhasil Direstore!"); location.reload();
-                }
+                db = JSON.parse(e.target.result);
+                localStorage.setItem(KEY, JSON.stringify(db));
+                alert("Data Berhasil Direstore!"); location.reload();
             } catch(err) { alert("File tidak valid!"); }
         };
         reader.readAsText(file);
@@ -407,12 +375,8 @@
         if(v === 'laporan') renderLaporan();
     }
 
-    function toggleNotaDisplay() {
-        // Hanya visual feedback jika diperlukan
-    }
-
     function hapusAntrean(noTrx) { if(confirm("Hapus?")) { db.antrean = db.antrean.filter(i => i.noTrx !== noTrx); localStorage.setItem(KEY, JSON.stringify(db)); renderAntrean(); } }
-    function resetData() { if(confirm("Reset seluruh data lokal?")) { localStorage.clear(); location.reload(); } }
+    function resetData() { if(confirm("Reset data lokal?")) { localStorage.clear(); location.reload(); } }
     init();
 </script>
 </body>
