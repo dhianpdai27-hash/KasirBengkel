@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bengkel Pro - Master V15.18</title>
+    <title>Bengkel Pro - Master V15.19</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', sans-serif; padding-bottom: 90px; background: #f4f7fa; }
@@ -35,7 +35,7 @@
 
 <div class="bg-blue-900 text-white p-4 sticky top-0 flex justify-between items-center no-print z-50">
     <h1 id="disp-nama" class="font-bold uppercase italic text-xl">BENGKEL PRO</h1>
-    <div class="text-[9px] bg-green-600 px-2 py-1 rounded uppercase font-bold">V15.18 FINAL</div>
+    <div class="text-[9px] bg-green-600 px-2 py-1 rounded uppercase font-bold">V15.19 FINAL</div>
 </div>
 
 <div class="p-4 no-print">
@@ -75,8 +75,12 @@
         <button onclick="prosesTransaksi()" class="w-full bg-blue-700 text-white py-4 rounded-xl font-black shadow-lg uppercase">Simpan & Cetak</button>
     </div>
 
+    <div id="menu-antrean" class="view hidden">
+        <div id="list-antrean" class="space-y-2"></div>
+    </div>
+
     <div id="menu-riwayat" class="view hidden">
-        <input type="text" id="f-search" placeholder="Cari..." oninput="renderRiwayat()" class="w-full mb-2">
+        <input type="text" id="f-search" placeholder="Cari Nopol / Nota..." oninput="renderRiwayat()" class="w-full mb-2">
         <div class="table-container">
             <table id="table-riwayat">
                 <thead><tr class="bg-gray-100"><th>Tgl</th><th>Nota</th><th>Nopol</th><th>KM</th><th>Merk</th><th>Nama</th><th>Jasa</th><th>Part</th><th>Harga</th><th>Qty</th><th>Total</th><th>Catatan</th></tr></thead>
@@ -85,8 +89,10 @@
         </div>
     </div>
 
-    <div id="menu-antrean" class="view hidden"><div id="list-antrean" class="space-y-2"></div></div>
-    <div id="menu-laporan" class="view hidden"><div id="box-laporan" class="space-y-4"></div></div>
+    <div id="menu-laporan" class="view hidden">
+        <div id="box-laporan" class="space-y-4"></div>
+    </div>
+
     <div id="menu-setting" class="view hidden">
         <div class="card space-y-2">
             <input type="text" id="s-nama" placeholder="Nama Bengkel">
@@ -94,10 +100,19 @@
             <input type="text" id="s-hp" placeholder="No HP">
             <input type="text" id="s-owner" placeholder="Owner">
             <input type="text" id="s-rek" placeholder="Rekening">
-            <div class="grid grid-cols-2 gap-2"><input type="text" id="s-prefix"><input type="number" id="s-next-no"></div>
+            <div class="grid grid-cols-2 gap-2">
+                <input type="text" id="s-prefix" placeholder="Prefix (DK-)">
+                <input type="number" id="s-next-no" placeholder="No Berikutnya">
+            </div>
             <input type="text" id="s-gsheet" placeholder="URL G-Sheet">
             <button onclick="saveSettings()" class="w-full bg-slate-800 text-white py-3 rounded font-bold uppercase text-xs">Simpan Pengaturan</button>
         </div>
+        <div class="card grid grid-cols-2 gap-2">
+            <button onclick="exportData()" class="bg-green-600 text-white py-2 rounded text-[10px] font-bold uppercase">Export JSON</button>
+            <button onclick="document.getElementById('importFile').click()" class="bg-orange-500 text-white py-2 rounded text-[10px] font-bold uppercase">Import JSON</button>
+            <input type="file" id="importFile" class="hidden" onchange="importData(event)">
+        </div>
+        <button onclick="resetData()" class="text-red-500 text-[10px] mt-8 block w-full text-center underline opacity-50">Hapus Data Lokal</button>
     </div>
 </div>
 
@@ -138,7 +153,7 @@
 </nav>
 
 <script>
-    const KEY = "BENGKEL_PRO_V1518_FINAL";
+    const KEY = "BENGKEL_PRO_V1519_MASTER";
     let db = JSON.parse(localStorage.getItem(KEY)) || { settings: { gsheet: "", nama: "BENGKEL PRO", rek: "", prefix: "DK-", nextNo: 1, alamat: "", hp: "", owner: "" }, transaksi: [], antrean: [] };
 
     function init() {
@@ -190,12 +205,11 @@
             if(j || p) items.push({j, p, h, q, s:h*q});
         });
 
-        // CETAK NOTA
-        let html = "";
         const isWO = (tipe === "WO");
         const jasa = items.filter(i => i.j);
         const part = items.filter(i => i.p);
-
+        let html = "";
+        
         if(jasa.length > 0){
             html += `<tr class="cat-row"><td colspan="4">JASA / SERVICE</td></tr>`;
             jasa.forEach(i => { html += `<tr><td>${i.j}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.h.toLocaleString('id-ID')}</td><td class="text-center">${i.q}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.s.toLocaleString('id-ID')}</td></tr>`; });
@@ -205,8 +219,7 @@
             part.forEach(i => { html += `<tr><td>${i.p}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.h.toLocaleString('id-ID')}</td><td class="text-center">${i.q}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.s.toLocaleString('id-ID')}</td></tr>`; });
         }
 
-        const priceHeads = document.querySelectorAll('.p-harga-col');
-        priceHeads.forEach(el => el.style.display = isWO ? 'none' : 'table-cell');
+        document.querySelectorAll('.p-harga-col').forEach(el => el.style.display = isWO ? 'none' : 'table-cell');
         document.getElementById('p-foot-total').style.display = isWO ? 'none' : 'table-footer-group';
 
         const s = db.settings;
@@ -229,16 +242,14 @@
 
         if(tipe === "NOTA") {
             items.forEach(i => {
-                const dataRow = {...common, uraian: i.j, sparepart: i.p, harga: i.h, qty: i.q, jumlah: i.s};
-                db.transaksi.push(dataRow);
-                // KIRIM KE GSHEET PER BARIS
-                if(s.gsheet) fetch(s.gsheet, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dataRow) });
+                const rowData = {...common, uraian: i.j, sparepart: i.p, harga: i.h, qty: i.q, jumlah: i.s};
+                db.transaksi.push(rowData);
+                if(s.gsheet) fetch(s.gsheet, { method: 'POST', mode: 'no-cors', body: JSON.stringify(rowData) });
             });
             db.settings.nextNo++;
         } else {
             db.antrean.push({...common, items: items.map(x=>({j:x.j, p:x.p, h:x.h, q:x.q})), tipe, total: document.getElementById('grand-total').innerText });
         }
-
         localStorage.setItem(KEY, JSON.stringify(db));
         window.print();
         setTimeout(() => location.reload(), 500);
@@ -262,6 +273,18 @@
         db.settings = { nama: document.getElementById('s-nama').value.toUpperCase(), alamat: document.getElementById('s-alamat').value, hp: document.getElementById('s-hp').value, owner: document.getElementById('s-owner').value, rek: document.getElementById('s-rek').value, prefix: document.getElementById('s-prefix').value, nextNo: parseInt(document.getElementById('s-next-no').value) || 1, gsheet: document.getElementById('s-gsheet').value };
         localStorage.setItem(KEY, JSON.stringify(db)); alert("Saved!"); location.reload();
     }
+
+    function exportData() {
+        const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `backup_${new Date().toISOString().slice(0,10)}.json`; a.click();
+    }
+
+    function importData(event) {
+        const f = event.target.files[0]; if(!f) return;
+        const r = new FileReader(); r.onload = (e) => { db = JSON.parse(e.target.result); localStorage.setItem(KEY, JSON.stringify(db)); location.reload(); }; r.readAsText(f);
+    }
+
+    function resetData() { if(confirm("Hapus Permanen Semua Data?")) { localStorage.clear(); location.reload(); } }
 
     init();
 </script>
