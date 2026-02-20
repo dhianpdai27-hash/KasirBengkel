@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bengkel Pro - Master V15.20</title>
+    <title>Bengkel Pro - Master V15.21 FINAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', sans-serif; padding-bottom: 90px; background: #f4f7fa; }
@@ -22,7 +22,7 @@
             #print-area { display: block !important; width: 100%; visibility: visible; }
             .header-nota { border-bottom: 3px solid black; padding-bottom: 8px; margin-bottom: 10px; }
             
-            /* FONT DIPERBESAR SESUAI PERMINTAAN */
+            /* PONDASI NOTA A4 DENGAN FONT LEBIH BESAR */
             table { width: 100% !important; border-collapse: collapse !important; margin-top: 10px; }
             th, td { border: 1px solid black !important; padding: 8px !important; font-size: 14px !important; color: black !important; }
             .text-sm-print { font-size: 13px !important; }
@@ -39,7 +39,7 @@
 
 <div class="bg-blue-900 text-white p-4 sticky top-0 flex justify-between items-center no-print z-50">
     <h1 id="disp-nama" class="font-bold uppercase italic text-xl">BENGKEL PRO</h1>
-    <div class="text-[9px] bg-green-600 px-2 py-1 rounded uppercase font-bold">V15.20</div>
+    <div class="text-[9px] bg-green-600 px-2 py-1 rounded uppercase font-bold">V15.21 FINAL</div>
 </div>
 
 <div class="p-4 no-print">
@@ -79,9 +79,12 @@
         <button onclick="prosesTransaksi()" class="w-full bg-blue-700 text-white py-4 rounded-xl font-black shadow-lg uppercase">Simpan & Cetak</button>
     </div>
 
-    <div id="menu-antrean" class="view hidden"><div id="list-antrean" class="space-y-2"></div></div>
+    <div id="menu-antrean" class="view hidden">
+        <div id="list-antrean" class="space-y-2"></div>
+    </div>
+
     <div id="menu-riwayat" class="view hidden">
-        <input type="text" id="f-search" placeholder="Cari..." oninput="renderRiwayat()" class="w-full mb-2">
+        <input type="text" id="f-search" placeholder="Cari Nopol/Nota..." oninput="renderRiwayat()" class="w-full mb-2">
         <div class="table-container">
             <table id="table-riwayat">
                 <thead><tr class="bg-gray-100"><th>Tgl</th><th>Nota</th><th>Nopol</th><th>KM</th><th>Merk</th><th>Nama</th><th>Jasa</th><th>Part</th><th>Harga</th><th>Qty</th><th>Total</th><th>Catatan</th></tr></thead>
@@ -89,7 +92,11 @@
             </table>
         </div>
     </div>
-    <div id="menu-laporan" class="view hidden"><div id="box-laporan" class="space-y-4"></div></div>
+
+    <div id="menu-laporan" class="view hidden">
+        <div id="box-laporan" class="space-y-4"></div>
+    </div>
+
     <div id="menu-setting" class="view hidden">
         <div class="card space-y-2">
             <input type="text" id="s-nama" placeholder="Nama Bengkel">
@@ -133,9 +140,9 @@
         <thead>
             <tr class="bg-gray-100">
                 <th class="text-left">URAIAN PEKERJAAN / PART</th>
-                <th class="text-right p-harga-col" style="width: 100px;">HARGA</th>
-                <th class="text-center" style="width: 50px;">QTY</th>
-                <th class="text-right p-harga-col" style="width: 120px;">SUBTOTAL</th>
+                <th class="text-right p-harga-col" style="width: 120px;">HARGA</th>
+                <th class="text-center" style="width: 60px;">QTY</th>
+                <th class="text-right p-harga-col" style="width: 140px;">SUBTOTAL</th>
             </tr>
         </thead>
         <tbody id="p-body"></tbody>
@@ -147,12 +154,12 @@
         </tfoot>
     </table>
 
-    <div class="text-sm-print mt-6">Catatan: <span id="p-cat" class="italic font-bold"></span></div>
+    <div class="text-sm-print mt-8">Catatan: <span id="p-cat" class="italic font-bold"></span></div>
     <div id="p-box-rek" class="text-sm-print mt-1">Pembayaran: <span id="p-rek" class="font-bold"></span></div>
     
-    <div class="mt-12">
-        <div class="w-56 text-center">
-            <p class="text-sm-print mb-20">Hormat Kami,</p>
+    <div class="mt-16">
+        <div class="w-64 text-center">
+            <p class="text-sm-print mb-24">Hormat Kami,</p>
             <p class="border-t border-black font-bold uppercase pt-1 text-sm-print">( <span id="p-owner"></span> )</p>
         </div>
     </div>
@@ -167,7 +174,7 @@
 </nav>
 
 <script>
-    const KEY = "BENGKEL_PRO_V1520";
+    const KEY = "BENGKEL_PRO_V1521_FINAL";
     let db = JSON.parse(localStorage.getItem(KEY)) || { settings: { gsheet: "", nama: "BENGKEL PRO", rek: "", prefix: "DK-", nextNo: 1, alamat: "", hp: "", owner: "" }, transaksi: [], antrean: [] };
 
     function init() {
@@ -221,14 +228,46 @@
             if(j || p) allItems.push({j, p, h, q, s:h*q});
         });
 
-        // SORTING: Jasa di atas, Sparepart di bawah agar rapi di GSheet & Nota
+        // SORTING: Jasa di atas, Sparepart di bawah
         const jasa = allItems.filter(i => i.j);
         const part = allItems.filter(i => i.p);
         const sortedItems = [...jasa, ...part];
 
+        const s = db.settings;
+        const common = { tgl: document.getElementById('in-tgl').value, noTrx: document.getElementById('in-nota').value, nopol, km: document.getElementById('in-km').value, merk: document.getElementById('in-merk').value, nama: document.getElementById('in-nama').value, catatan: document.getElementById('in-catatan').value };
+
+        if(tipe === "NOTA") {
+            let batchData = [];
+            sortedItems.forEach(i => {
+                const rowData = {...common, uraian: i.j, sparepart: i.p, harga: i.h, qty: i.q, jumlah: i.s};
+                db.transaksi.push(rowData);
+                batchData.push(rowData);
+            });
+
+            // KIRIM PAKET MASSAL (BATCH) KE GSHEET
+            if(s.gsheet) {
+                fetch(s.gsheet, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(batchData) 
+                });
+            }
+            db.settings.nextNo++;
+        } else {
+            db.antrean.push({...common, items: sortedItems, tipe, total: document.getElementById('grand-total').innerText });
+        }
+
+        // Cetak Nota
+        renderCetak(jasa, part, tipe);
+        localStorage.setItem(KEY, JSON.stringify(db));
+        window.print();
+        setTimeout(() => location.reload(), 500);
+    }
+
+    function renderCetak(jasa, part, tipe) {
         let html = "";
         const isWO = (tipe === "WO");
-
         if(jasa.length > 0){
             html += `<tr class="cat-row"><td colspan="4">JASA / SERVICE</td></tr>`;
             jasa.forEach(i => { html += `<tr><td>${i.j}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.h.toLocaleString('id-ID')}</td><td class="text-center">${i.q}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.s.toLocaleString('id-ID')}</td></tr>`; });
@@ -237,10 +276,7 @@
             html += `<tr class="cat-row"><td colspan="4">SPAREPART / OLI</td></tr>`;
             part.forEach(i => { html += `<tr><td>${i.p}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.h.toLocaleString('id-ID')}</td><td class="text-center">${i.q}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.s.toLocaleString('id-ID')}</td></tr>`; });
         }
-
-        document.querySelectorAll('.p-harga-col').forEach(el => el.style.display = isWO ? 'none' : 'table-cell');
-        document.getElementById('p-foot-total').style.display = isWO ? 'none' : 'table-footer-group';
-
+        document.getElementById('p-body').innerHTML = html;
         const s = db.settings;
         document.getElementById('p-toko').innerText = s.nama;
         document.getElementById('p-alamat-toko').innerText = s.alamat;
@@ -249,31 +285,14 @@
         document.getElementById('p-rek').innerText = s.rek;
         document.getElementById('p-label-tipe').innerText = tipe;
         document.getElementById('p-unit').innerText = document.getElementById('in-merk').value;
-        document.getElementById('p-nopol').innerText = nopol;
+        document.getElementById('p-nopol').innerText = document.getElementById('in-nopol').value.toUpperCase();
         document.getElementById('p-km').innerText = document.getElementById('in-km').value;
         document.getElementById('p-no').innerText = document.getElementById('in-nota').value;
         document.getElementById('p-tgl').innerText = document.getElementById('in-tgl').value;
         document.getElementById('p-cat').innerText = document.getElementById('in-catatan').value;
-        document.getElementById('p-body').innerHTML = html;
         document.getElementById('p-total').innerText = document.getElementById('grand-total').innerText;
-
-        const common = { tgl: document.getElementById('in-tgl').value, noTrx: document.getElementById('in-nota').value, nopol, km: document.getElementById('in-km').value, merk: document.getElementById('in-merk').value, nama: document.getElementById('in-nama').value, catatan: document.getElementById('in-catatan').value };
-
-        if(tipe === "NOTA") {
-            // Pengiriman ke GSheet mengikuti urutan SortedItems (Jasa dulu baru Part)
-            sortedItems.forEach(i => {
-                const rowData = {...common, uraian: i.j, sparepart: i.p, harga: i.h, qty: i.q, jumlah: i.s};
-                db.transaksi.push(rowData);
-                if(s.gsheet) fetch(s.gsheet, { method: 'POST', mode: 'no-cors', body: JSON.stringify(rowData) });
-            });
-            db.settings.nextNo++;
-        } else {
-            db.antrean.push({...common, items: sortedItems, tipe, total: document.getElementById('grand-total').innerText });
-        }
-
-        localStorage.setItem(KEY, JSON.stringify(db));
-        window.print();
-        setTimeout(() => location.reload(), 500);
+        document.querySelectorAll('.p-harga-col').forEach(el => el.style.display = isWO ? 'none' : 'table-cell');
+        document.getElementById('p-foot-total').style.display = isWO ? 'none' : 'table-footer-group';
     }
 
     function renderRiwayat() {
@@ -297,7 +316,7 @@
 
     function exportData() {
         const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `backup_${new Date().toISOString().slice(0,10)}.json`; a.click();
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `backup_bengkel_${new Date().toISOString().slice(0,10)}.json`; a.click();
     }
 
     function importData(event) {
@@ -305,7 +324,7 @@
         const r = new FileReader(); r.onload = (e) => { db = JSON.parse(e.target.result); localStorage.setItem(KEY, JSON.stringify(db)); location.reload(); }; r.readAsText(f);
     }
 
-    function resetData() { if(confirm("Hapus Permanen?")) { localStorage.clear(); location.reload(); } }
+    function resetData() { if(confirm("Hapus Permanen Semua Data Lokal?")) { localStorage.clear(); location.reload(); } }
 
     init();
 </script>
