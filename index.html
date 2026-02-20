@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bengkel Pro - Master V15.19</title>
+    <title>Bengkel Pro - Master V15.20</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', sans-serif; padding-bottom: 90px; background: #f4f7fa; }
@@ -21,8 +21,12 @@
             .no-print, .nav-bottom, button, .bg-blue-900, .view { display: none !important; }
             #print-area { display: block !important; width: 100%; visibility: visible; }
             .header-nota { border-bottom: 3px solid black; padding-bottom: 8px; margin-bottom: 10px; }
-            table { width: 100% !important; border-collapse: collapse !important; }
-            th, td { border: 1px solid black !important; padding: 6px !important; font-size: 12px !important; color: black !important; }
+            
+            /* FONT DIPERBESAR SESUAI PERMINTAAN */
+            table { width: 100% !important; border-collapse: collapse !important; margin-top: 10px; }
+            th, td { border: 1px solid black !important; padding: 8px !important; font-size: 14px !important; color: black !important; }
+            .text-sm-print { font-size: 13px !important; }
+            .text-lg-print { font-size: 18px !important; }
             .cat-row td { background: #f2f2f2 !important; font-weight: bold !important; text-align: center !important; }
         }
 
@@ -35,7 +39,7 @@
 
 <div class="bg-blue-900 text-white p-4 sticky top-0 flex justify-between items-center no-print z-50">
     <h1 id="disp-nama" class="font-bold uppercase italic text-xl">BENGKEL PRO</h1>
-    <div class="text-[9px] bg-green-600 px-2 py-1 rounded uppercase font-bold">V15.19 FINAL</div>
+    <div class="text-[9px] bg-green-600 px-2 py-1 rounded uppercase font-bold">V15.20</div>
 </div>
 
 <div class="p-4 no-print">
@@ -75,12 +79,9 @@
         <button onclick="prosesTransaksi()" class="w-full bg-blue-700 text-white py-4 rounded-xl font-black shadow-lg uppercase">Simpan & Cetak</button>
     </div>
 
-    <div id="menu-antrean" class="view hidden">
-        <div id="list-antrean" class="space-y-2"></div>
-    </div>
-
+    <div id="menu-antrean" class="view hidden"><div id="list-antrean" class="space-y-2"></div></div>
     <div id="menu-riwayat" class="view hidden">
-        <input type="text" id="f-search" placeholder="Cari Nopol / Nota..." oninput="renderRiwayat()" class="w-full mb-2">
+        <input type="text" id="f-search" placeholder="Cari..." oninput="renderRiwayat()" class="w-full mb-2">
         <div class="table-container">
             <table id="table-riwayat">
                 <thead><tr class="bg-gray-100"><th>Tgl</th><th>Nota</th><th>Nopol</th><th>KM</th><th>Merk</th><th>Nama</th><th>Jasa</th><th>Part</th><th>Harga</th><th>Qty</th><th>Total</th><th>Catatan</th></tr></thead>
@@ -88,11 +89,7 @@
             </table>
         </div>
     </div>
-
-    <div id="menu-laporan" class="view hidden">
-        <div id="box-laporan" class="space-y-4"></div>
-    </div>
-
+    <div id="menu-laporan" class="view hidden"><div id="box-laporan" class="space-y-4"></div></div>
     <div id="menu-setting" class="view hidden">
         <div class="card space-y-2">
             <input type="text" id="s-nama" placeholder="Nama Bengkel">
@@ -100,10 +97,7 @@
             <input type="text" id="s-hp" placeholder="No HP">
             <input type="text" id="s-owner" placeholder="Owner">
             <input type="text" id="s-rek" placeholder="Rekening">
-            <div class="grid grid-cols-2 gap-2">
-                <input type="text" id="s-prefix" placeholder="Prefix (DK-)">
-                <input type="number" id="s-next-no" placeholder="No Berikutnya">
-            </div>
+            <div class="grid grid-cols-2 gap-2"><input type="text" id="s-prefix"><input type="number" id="s-next-no"></div>
             <input type="text" id="s-gsheet" placeholder="URL G-Sheet">
             <button onclick="saveSettings()" class="w-full bg-slate-800 text-white py-3 rounded font-bold uppercase text-xs">Simpan Pengaturan</button>
         </div>
@@ -118,30 +112,50 @@
 
 <div id="print-area" class="hidden">
     <div class="header-nota text-center">
-        <h2 id="p-toko" class="text-2xl font-bold uppercase"></h2>
-        <p id="p-alamat-toko" class="text-xs"></p>
-        <p id="p-hp-toko" class="text-xs font-bold"></p>
+        <h2 id="p-toko" class="text-3xl font-bold uppercase"></h2>
+        <p id="p-alamat-toko" class="text-sm-print"></p>
+        <p id="p-hp-toko" class="text-sm-print font-bold"></p>
     </div>
-    <div class="flex justify-between my-4 text-sm">
-        <div>
+    <div class="flex justify-between my-4 text-sm-print">
+        <div class="space-y-1">
             <p>Unit: <span id="p-unit" class="font-bold"></span></p>
             <p>No. Polisi: <span id="p-nopol" class="font-bold"></span></p>
             <p>KM: <span id="p-km" class="font-bold"></span></p>
         </div>
-        <div class="text-right">
-            <p id="p-label-tipe" class="font-bold italic underline uppercase text-lg"></p>
+        <div class="text-right space-y-1">
+            <p id="p-label-tipe" class="font-bold italic underline uppercase text-lg-print"></p>
             <p>No: <span id="p-no" class="font-bold"></span></p>
             <p>Tgl: <span id="p-tgl"></span></p>
         </div>
     </div>
+    
     <table class="w-full">
-        <thead><tr class="bg-gray-100"><th>URAIAN PEKERJAAN / PART</th><th class="p-harga-col">HARGA</th><th>QTY</th><th class="p-harga-col">SUBTOTAL</th></tr></thead>
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="text-left">URAIAN PEKERJAAN / PART</th>
+                <th class="text-right p-harga-col" style="width: 100px;">HARGA</th>
+                <th class="text-center" style="width: 50px;">QTY</th>
+                <th class="text-right p-harga-col" style="width: 120px;">SUBTOTAL</th>
+            </tr>
+        </thead>
         <tbody id="p-body"></tbody>
-        <tfoot id="p-foot-total"><tr class="font-bold"><td colspan="3" class="text-right p-2">GRAND TOTAL (Rp)</td><td class="text-right p-2" id="p-total"></td></tr></tfoot>
+        <tfoot id="p-foot-total">
+            <tr class="font-bold">
+                <td colspan="3" class="text-right p-3">GRAND TOTAL (Rp)</td>
+                <td class="text-right p-3" id="p-total"></td>
+            </tr>
+        </tfoot>
     </table>
-    <div class="text-sm mt-4">Catatan: <span id="p-cat" class="italic font-bold"></span></div>
-    <div id="p-box-rek" class="text-sm mt-1">Pembayaran: <span id="p-rek" class="font-bold"></span></div>
-    <div class="mt-8"><div class="w-48 text-center"><p class="text-sm mb-16">Hormat Kami,</p><p class="border-t border-black font-bold uppercase pt-1">( <span id="p-owner"></span> )</p></div></div>
+
+    <div class="text-sm-print mt-6">Catatan: <span id="p-cat" class="italic font-bold"></span></div>
+    <div id="p-box-rek" class="text-sm-print mt-1">Pembayaran: <span id="p-rek" class="font-bold"></span></div>
+    
+    <div class="mt-12">
+        <div class="w-56 text-center">
+            <p class="text-sm-print mb-20">Hormat Kami,</p>
+            <p class="border-t border-black font-bold uppercase pt-1 text-sm-print">( <span id="p-owner"></span> )</p>
+        </div>
+    </div>
 </div>
 
 <nav class="nav-bottom no-print">
@@ -153,7 +167,7 @@
 </nav>
 
 <script>
-    const KEY = "BENGKEL_PRO_V1519_MASTER";
+    const KEY = "BENGKEL_PRO_V1520";
     let db = JSON.parse(localStorage.getItem(KEY)) || { settings: { gsheet: "", nama: "BENGKEL PRO", rek: "", prefix: "DK-", nextNo: 1, alamat: "", hp: "", owner: "" }, transaksi: [], antrean: [] };
 
     function init() {
@@ -168,7 +182,8 @@
         document.getElementById('s-prefix').value = s.prefix;
         document.getElementById('s-next-no').value = s.nextNo;
         document.getElementById('s-gsheet').value = s.gsheet;
-        updateNotaDisplay(); addItemRow();
+        updateNotaDisplay();
+        addItemRow();
     }
 
     function updateNotaDisplay() { document.getElementById('in-nota').value = db.settings.prefix + String(db.settings.nextNo).padStart(3, '0'); }
@@ -176,7 +191,8 @@
     function addItemRow(data = {j:'', p:'', h:0, q:1}) {
         const div = document.createElement('div'); div.className = "grid-item item-row";
         div.innerHTML = `<input type="text" class="i-jasa" value="${data.j}" placeholder="Jasa"><input type="text" class="i-part" value="${data.p}" placeholder="Part"><input type="number" class="i-price" value="${data.h}"><input type="number" class="i-qty" value="${data.q}"><input type="text" readonly class="i-sub bg-gray-50 text-right font-bold" value="0"><button onclick="this.parentElement.remove(); recalc()" class="text-red-500 font-bold">×</button>`;
-        document.getElementById('item-list').appendChild(div); recalc();
+        document.getElementById('item-list').appendChild(div);
+        recalc();
     }
 
     function recalc() {
@@ -196,20 +212,23 @@
         const nopol = document.getElementById('in-nopol').value.toUpperCase();
         if(!nopol) return alert("Nopol Wajib Diisi!");
 
-        let items = [];
+        let allItems = [];
         document.querySelectorAll('.item-row').forEach(row => {
             const j = row.querySelector('.i-jasa').value;
             const p = row.querySelector('.i-part').value;
             const h = parseFloat(row.querySelector('.i-price').value) || 0;
             const q = parseFloat(row.querySelector('.i-qty').value) || 0;
-            if(j || p) items.push({j, p, h, q, s:h*q});
+            if(j || p) allItems.push({j, p, h, q, s:h*q});
         });
 
-        const isWO = (tipe === "WO");
-        const jasa = items.filter(i => i.j);
-        const part = items.filter(i => i.p);
+        // SORTING: Jasa di atas, Sparepart di bawah agar rapi di GSheet & Nota
+        const jasa = allItems.filter(i => i.j);
+        const part = allItems.filter(i => i.p);
+        const sortedItems = [...jasa, ...part];
+
         let html = "";
-        
+        const isWO = (tipe === "WO");
+
         if(jasa.length > 0){
             html += `<tr class="cat-row"><td colspan="4">JASA / SERVICE</td></tr>`;
             jasa.forEach(i => { html += `<tr><td>${i.j}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.h.toLocaleString('id-ID')}</td><td class="text-center">${i.q}</td><td class="text-right p-harga-col" style="${isWO ? 'display:none':''}">${i.s.toLocaleString('id-ID')}</td></tr>`; });
@@ -241,15 +260,17 @@
         const common = { tgl: document.getElementById('in-tgl').value, noTrx: document.getElementById('in-nota').value, nopol, km: document.getElementById('in-km').value, merk: document.getElementById('in-merk').value, nama: document.getElementById('in-nama').value, catatan: document.getElementById('in-catatan').value };
 
         if(tipe === "NOTA") {
-            items.forEach(i => {
+            // Pengiriman ke GSheet mengikuti urutan SortedItems (Jasa dulu baru Part)
+            sortedItems.forEach(i => {
                 const rowData = {...common, uraian: i.j, sparepart: i.p, harga: i.h, qty: i.q, jumlah: i.s};
                 db.transaksi.push(rowData);
                 if(s.gsheet) fetch(s.gsheet, { method: 'POST', mode: 'no-cors', body: JSON.stringify(rowData) });
             });
             db.settings.nextNo++;
         } else {
-            db.antrean.push({...common, items: items.map(x=>({j:x.j, p:x.p, h:x.h, q:x.q})), tipe, total: document.getElementById('grand-total').innerText });
+            db.antrean.push({...common, items: sortedItems, tipe, total: document.getElementById('grand-total').innerText });
         }
+
         localStorage.setItem(KEY, JSON.stringify(db));
         window.print();
         setTimeout(() => location.reload(), 500);
@@ -284,7 +305,7 @@
         const r = new FileReader(); r.onload = (e) => { db = JSON.parse(e.target.result); localStorage.setItem(KEY, JSON.stringify(db)); location.reload(); }; r.readAsText(f);
     }
 
-    function resetData() { if(confirm("Hapus Permanen Semua Data?")) { localStorage.clear(); location.reload(); } }
+    function resetData() { if(confirm("Hapus Permanen?")) { localStorage.clear(); location.reload(); } }
 
     init();
 </script>
