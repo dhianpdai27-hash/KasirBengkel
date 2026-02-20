@@ -3,451 +3,417 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Bengkel Pro v7 - Nota Serial Version</title>
+    <title>Bengkel Pro - Master Final V15.7</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --primary: #007bff; --secondary: #6c757d; --success: #28a745; --danger: #dc3545; --warning: #ffc107; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0 0 80px 0; background-color: #f0f2f5; color: #333; }
-        .container { max-width: 1000px; margin: 20px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
-        /* Navigasi */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 2px solid var(--primary); box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; }
-        .nav-item { border: none; background: none; color: var(--secondary); font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; font-weight: bold; width: 16%; }
-        .nav-item.active { color: var(--primary); }
-        .nav-item svg { width: 22px; height: 22px; margin-bottom: 4px; }
-
-        .section { display: none; }
-        .section.active { display: block; }
-        
-        h2, h3 { color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .form-group { margin-bottom: 12px; }
-        label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-
-        table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 14px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background: #f8f9fa; color: var(--primary); }
-
-        .btn { padding: 10px 15px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; margin: 2px; }
-        .btn-blue { background: var(--primary); }
-        .btn-green { background: var(--success); }
-        .btn-red { background: var(--danger); }
-        .btn-orange { background: var(--warning); color: #333; }
-
-        /* AREA CETAK */
-        .print-area { border: 1px solid #000; padding: 20px; background: #fff; margin-top: 20px; color: #000; max-width: 100%; box-sizing: border-box; }
-        .queue-badge { background: #fff9e6; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--warning); border-left: 5px solid var(--warning); }
-        .detail-row { background: #fdfdfd; display: none; }
-        .detail-box { padding: 15px; border: 1px dashed #bbb; margin: 5px; background: #fff; border-radius: 8px; }
-        .badge-jasa { color: #17a2b8; font-weight: bold; }
-        .badge-part { color: #6f42c1; font-weight: bold; }
+        body { font-family: 'Inter', sans-serif; padding-bottom: 90px; background: #f4f7fa; }
+        .nav-bottom { position: fixed; bottom: 0; width: 100%; display: flex; background: #fff; border-top: 2px solid #ddd; z-index: 1000; }
+        .nav-btn { flex: 1; padding: 12px 5px; text-align: center; font-size: 10px; font-weight: bold; color: #666; cursor: pointer; }
+        .nav-btn.active { color: #2563eb; border-top: 4px solid #2563eb; background: #f8fafc; }
+        .card { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .hidden { display: none; }
+        input, select, textarea { border: 1px solid #ccc; padding: 10px; border-radius: 4px; width: 100%; font-size: 14px; }
+        .table-container { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid #ddd; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1100px; }
+        th, td { border: 1px solid #eee; padding: 10px; text-align: left; }
+        th { background: #f8fafc; color: #475569; position: sticky; top: 0; }
+        .grid-item { display: grid; grid-template-columns: 2fr 2fr 1.5fr 0.8fr 1.5fr 40px; gap: 5px; margin-bottom: 8px; align-items: center; }
 
         @media print {
-            @page { size: portrait; margin: 0.5cm; }
-            .no-print, .bottom-nav { display: none !important; }
-            body { padding: 0; margin: 0; background: #fff; }
-            .container { max-width: 100%; border: none; box-shadow: none; margin: 0; padding: 0; }
-            .print-area { border: none; padding: 0; width: 14.8cm; font-size: 12px; }
-            table { font-size: 11px; }
-            th, td { padding: 6px; }
+            .no-print, .nav-bottom, button, .bg-blue-900, .view { display: none !important; }
+            #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; visibility: visible; }
+            table { width: 100% !important; border: 1px solid black !important; min-width: 100% !important; }
+            th, td { border: 1px solid black !important; padding: 6px !important; color: black !important; font-size: 12px !important; }
+            .no-print-wo { display: none !important; } /* Sembunyikan harga di WO */
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2 id="displayNamaBengkel" style="text-align: center;">Bengkel Pro</h2>
+<div class="bg-blue-900 text-white p-4 sticky top-0 flex justify-between items-center no-print z-50">
+    <h1 id="disp-nama" class="font-bold uppercase italic text-xl">BENGKEL PRO</h1>
+    <div class="text-[9px] bg-green-600 px-2 py-1 rounded uppercase">V15.7 Master</div>
+</div>
 
-    <div id="tab-input" class="section active">
-        <div class="no-print">
-            <h3>Input Transaksi <span id="nextNotaLabel" style="float:right; font-size:14px; color:var(--secondary)">No Nota: ...</span></h3>
-            <div id="queue-list"></div>
-            <div class="grid-2">
-                <div class="form-group"><label>Nama Pelanggan:</label><input type="text" id="custName"></div>
-                <div class="form-group"><label>Nopol / Merk Mobil:</label><input type="text" id="carInfo"></div>
-                <div class="form-group"><label>Kilometer:</label><input type="number" id="km"></div>
-                <div class="form-group"><label>Nama Mekanik:</label><input type="text" id="mekanikName"></div>
+<div class="p-4 no-print">
+    <div id="menu-nota" class="view">
+        <div class="card">
+            <div class="grid grid-cols-2 gap-2 mb-2">
+                <select id="in-tipe" class="font-bold text-blue-700 bg-blue-50" onchange="toggleNotaDisplay()">
+                    <option value="NOTA">NOTA (OMZET)</option>
+                    <option value="WO">WORKING ORDER</option>
+                    <option value="ESTIMASI">ESTIMASI</option>
+                </select>
+                <input type="text" id="in-nota" readonly class="bg-gray-100 font-bold text-center">
             </div>
-            <table id="itemTable">
+            <div class="grid grid-cols-2 gap-2 mb-2">
+                <input type="date" id="in-tgl">
+                <input type="text" id="in-nopol" placeholder="NO POLISI" class="uppercase font-bold">
+            </div>
+            <div class="grid grid-cols-2 gap-2 mb-2">
+                <input type="text" id="in-nama" placeholder="NAMA CUSTOMER">
+                <input type="text" id="in-merk" placeholder="MERK MOBIL">
+            </div>
+            <input type="number" id="in-km" placeholder="KILOMETER (KM)">
+        </div>
+
+        <div class="card">
+            <div id="item-list" oninput="recalc()">
+                <div class="grid-item text-[9px] font-bold text-gray-400 uppercase">
+                    <div>Jasa</div><div>Part</div><div>Harga</div><div>Qty</div><div>Total</div><div></div>
+                </div>
+            </div>
+            <button onclick="addItemRow()" class="text-blue-600 font-bold text-xs mt-2">+ TAMBAH ITEM</button>
+            <textarea id="in-catatan" rows="2" placeholder="Catatan/Keluhan..." class="mt-4 text-xs w-full"></textarea>
+            <div class="mt-4 p-4 bg-slate-900 text-white rounded flex justify-between items-center">
+                <span id="grand-total" class="text-2xl font-mono text-green-400 font-bold">0</span>
+            </div>
+        </div>
+        <button onclick="prosesTransaksi()" class="w-full bg-blue-700 text-white py-4 rounded-xl font-black shadow-lg">SIMPAN & CETAK</button>
+    </div>
+
+    <div id="menu-antrean" class="view hidden">
+        <h2 class="font-bold text-blue-800 mb-3 uppercase italic text-sm">Antrean WO & Estimasi</h2>
+        <div id="list-antrean" class="space-y-2"></div>
+    </div>
+
+    <div id="menu-riwayat" class="view hidden">
+        <input type="text" id="f-search" placeholder="Cari Riwayat..." oninput="renderRiwayat()" class="w-full mb-2">
+        <div class="table-container">
+            <table>
                 <thead>
                     <tr>
-                        <th style="width:100px">Kat.</th>
-                        <th>Uraian</th>
-                        <th style="width:60px">Qty</th>
-                        <th style="width:100px">Harga</th>
-                        <th style="width:100px">Subtotal</th>
-                        <th style="width:40px">Aksi</th>
+                        <th>Tgl</th><th>Nota</th><th>Nopol</th><th>Nama</th><th>Merk</th><th>Jasa</th><th>Part</th><th>Harga</th><th>Qty</th><th>Jumlah</th><th>Catatan</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td><select class="item-cat"><option value="Jasa">Jasa</option><option value="Part">Part</option></select></td>
-                        <td><input type="text" class="item-desc"></td>
-                        <td><input type="number" class="item-qty" oninput="calculate()"></td>
-                        <td><input type="number" class="item-price" oninput="calculate()"></td>
-                        <td class="item-sub">0</td>
-                        <td>-</td>
-                    </tr>
-                </tbody>
-            </table>
-            <button class="btn btn-blue" onclick="addRow()">+ Tambah Baris</button>
-            <textarea id="catatan" placeholder="Catatan tambahan..." style="margin-top:10px"></textarea>
-            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
-                <button class="btn btn-orange" onclick="saveToQueue()">Ke Antrean</button>
-                <button class="btn btn-blue" onclick="generate('Estimasi')">Cetak Estimasi</button>
-                <button class="btn btn-green" onclick="generate('Nota', true)">Simpan & Cetak Nota</button>
-            </div>
-        </div>
-
-        <div id="printOutput" class="print-area" style="display:none;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px;">
-                <div style="width: 60%;">
-                    <h2 id="p-namaBengkel" style="margin:0; border:none; color:#000; font-size: 18px;">NAMA BENGKEL</h2>
-                    <div id="p-alamatBengkel" style="font-size: 11px;">Alamat</div>
-                    <div id="p-hpBengkel" style="font-size: 11px;">HP: -</div>
-                </div>
-                <div style="text-align: right; width: 35%;">
-                    <h3 id="p-tipe" style="margin:0; border:none; text-decoration: underline; color:#000;">NOTA</h3>
-                    <div id="p-noNota" style="font-weight: bold; font-size: 12px;">No: -</div>
-                    <div id="p-tgl" style="font-size: 11px;">Tgl: -</div>
-                </div>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">
-                <div>
-                    <strong>Pelanggan:</strong> <span id="p-cust"></span><br>
-                    <strong>Mobil:</strong> <span id="p-unit"></span>
-                </div>
-                <div style="text-align: right;">
-                    <strong>KM:</strong> <span id="p-km"></span><br>
-                    <strong>Mekanik:</strong> <span id="p-mekanik"></span>
-                </div>
-            </div>
-            <div id="p-tables" style="margin-top: 10px;"></div>
-            <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-                <div style="width: 55%; font-size: 11px;">
-                    <strong>Catatan:</strong> <span id="p-catatan"></span><br>
-                    <div id="p-rekening" style="margin-top:5px; font-style: italic;"></div>
-                </div>
-                <div style="width: 40%; text-align: right;">
-                    <h3 style="border:none; margin:0; color:#000; font-size: 16px;">Total: Rp <span id="p-total">0</span></h3>
-                </div>
-            </div>
-            <div style="margin-top: 30px; text-align: right; font-size: 12px;">
-                Hormat Kami,<br><br><br>
-                <strong id="p-ownerSign">( .................... )</strong>
-            </div>
-            <button class="btn btn-blue no-print" onclick="window.print()" style="width:100%; margin-top:30px;">KLIK CETAK (A5/A4)</button>
-        </div>
-    </div>
-
-    <div id="tab-wo" class="section">
-        <div id="wo-print-area" class="print-area">
-            <center><h2 style="border:none;">WORKING ORDER</h2></center>
-            <div id="wo-content"></div>
-        </div>
-        <button class="btn btn-blue no-print" onclick="window.print()" style="width:100%; margin-top:15px;">Print WO</button>
-    </div>
-
-    <div id="tab-biaya" class="section">
-        <h3>Pengeluaran Kas</h3>
-        <div class="grid-2">
-            <select id="expCat"><option value="Gaji">Gaji</option><option value="Belanja Sparepart">Belanja Sparepart</option><option value="Administrasi">Administrasi</option></select>
-            <input type="number" id="expNom" placeholder="Nominal Rp">
-            <input type="text" id="expDesc" placeholder="Keterangan">
-            <button class="btn btn-green" onclick="saveBiaya()">Simpan Biaya</button>
-        </div>
-        <table id="tableBiaya">
-            <thead><tr><th>Tgl</th><th>Kategori</th><th>Ket</th><th>Nominal</th><th>Hapus</th></tr></thead>
-            <tbody id="biayaList"></tbody>
-        </table>
-    </div>
-
-    <div id="tab-riwayat" class="section">
-        <h3>Riwayat Pekerjaan</h3>
-        <input type="text" id="search" placeholder="Cari Pelanggan/Unit/No Nota..." onkeyup="loadRiwayat()" style="margin-bottom:15px">
-        <div style="overflow-x: auto;">
-            <table>
-                <thead><tr><th style="width:30px"></th><th>No Nota</th><th>Tgl</th><th>Nama</th><th>Unit</th><th>Total</th><th>Aksi</th></tr></thead>
-                <tbody id="historyList"></tbody>
+                <tbody id="tbody-riwayat"></tbody>
             </table>
         </div>
     </div>
 
-    <div id="tab-laporan" class="section">
-        <h3>Laporan Keuangan</h3>
-        <table>
-            <tr style="background:#eee"><th colspan="2">REKAPITULASI</th></tr>
-            <tr><td>Total Jasa</td><td id="r-jasa">0</td></tr>
-            <tr><td>Total Sparepart</td><td id="r-part">0</td></tr>
-            <tr><td>Total Biaya/Pengeluaran</td><td id="r-total-out">0</td></tr>
-            <tr style="background:var(--primary); color:#fff"><td><strong>LABA BERSIH</strong></td><td id="r-profit">0</td></tr>
-        </table>
-        <button class="btn btn-blue no-print" onclick="window.print()" style="margin-top:20px">Print Laporan</button>
+    <div id="menu-laporan" class="view hidden">
+        <div id="box-laporan" class="space-y-4"></div>
     </div>
 
-    <div id="tab-set" class="section">
-        <h3>Pengaturan</h3>
-        <div class="form-group"><label>Nama Bengkel:</label><input type="text" id="setNama"></div>
-        <div class="form-group"><label>Alamat:</label><input type="text" id="setAlamat"></div>
-        <div class="form-group"><label>No. HP:</label><input type="text" id="setHP"></div>
-        <div class="form-group"><label>Info Rekening:</label><textarea id="setRek"></textarea></div>
-        <div class="form-group"><label>Nama Pemilik:</label><input type="text" id="setSign"></div>
-        <button class="btn btn-green" onclick="saveSettings()">Simpan</button>
-        <div style="margin-top:30px; padding:15px; background:#fff5f5; border:1px solid #fcc">
-            <h4>Database</h4>
-            <button class="btn btn-blue" onclick="exportData()">Backup</button>
-            <button class="btn btn-blue" onclick="importData()">Restore</button>
-            <button class="btn btn-red" onclick="resetData()">Reset</button>
+    <div id="menu-setting" class="view hidden">
+        <div class="card space-y-2">
+            <label class="text-[10px] font-bold text-gray-400">PROFIL BENGKEL</label>
+            <input type="text" id="s-nama" placeholder="Nama Bengkel">
+            <input type="text" id="s-alamat" placeholder="Alamat">
+            <input type="text" id="s-hp" placeholder="No HP">
+            <input type="text" id="s-owner" placeholder="Owner">
+            <input type="text" id="s-rek" placeholder="Rekening Pembayaran">
+            <hr class="my-2 border-gray-100">
+            <label class="text-[10px] font-bold text-orange-500 uppercase">Pengaturan Nomor Nota</label>
+            <div class="grid grid-cols-2 gap-2">
+                <input type="text" id="s-prefix" placeholder="Prefix (DK012026-)">
+                <input type="number" id="s-next-no" placeholder="No Urut (1)">
+            </div>
+            <hr class="my-2">
+            <label class="text-[10px] font-bold text-blue-500 uppercase">Cloud Sync (Google Sheets)</label>
+            <input type="text" id="s-gsheet" placeholder="URL Google Apps Script">
+            <button onclick="saveSettings()" class="w-full bg-slate-800 text-white py-3 rounded font-bold mt-2 uppercase text-xs">Simpan Master Pengaturan</button>
         </div>
+
+        <div class="card">
+            <label class="text-[10px] font-bold text-gray-400 uppercase">Backup & Restore</label>
+            <div class="grid grid-cols-2 gap-2 mt-2">
+                <button onclick="exportData()" class="bg-green-600 text-white py-2 rounded text-[10px] font-bold uppercase">Export JSON</button>
+                <button onclick="document.getElementById('importFile').click()" class="bg-orange-500 text-white py-2 rounded text-[10px] font-bold uppercase">Import JSON</button>
+                <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
+            </div>
+        </div>
+        
+        <button onclick="resetData()" class="text-red-500 text-[10px] mt-8 block w-full text-center underline italic opacity-50">Hapus Data Lokal</button>
     </div>
 </div>
 
-<nav class="bottom-nav no-print">
-    <button class="nav-item active" onclick="openTab(event, 'tab-input')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>Input</button>
-    <button class="nav-item" onclick="openTab(event, 'tab-wo'); updateWO();"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>W.O</button>
-    <button class="nav-item" onclick="openTab(event, 'tab-biaya'); loadBiaya();"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 1.9 1.55 3.28 3.68 3.75V21h3v-2.15c2.19-.35 3.78-1.74 3.78-3.65 0-2.72-2.36-3.65-4.88-4.3z"/></svg>Biaya</button>
-    <button class="nav-item" onclick="openTab(event, 'tab-riwayat'); loadRiwayat();"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>Riwayat</button>
-    <button class="nav-item" onclick="openTab(event, 'tab-laporan'); loadLaporan();"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>Laporan</button>
-    <button class="nav-item" onclick="openTab(event, 'tab-set');"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L3.82 8.87c-.11.21-.06.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>Set</button>
+<div id="print-area" class="hidden p-8 bg-white text-black">
+    <div class="text-center border-b-4 border-double border-black pb-4 mb-4">
+        <h2 id="p-toko" class="text-2xl font-bold uppercase"></h2>
+        <p id="p-alamat-toko" class="text-xs"></p>
+        <p id="p-hp-toko" class="text-xs"></p>
+    </div>
+    <div class="flex justify-between mb-4 text-[12px]">
+        <div>
+            <p>Customer: <span id="p-nama" class="font-bold"></span></p>
+            <p>Unit: <span id="p-unit"></span> (<span id="p-nopol"></span>)</p>
+            <p>KM: <span id="p-km"></span></p>
+        </div>
+        <div class="text-right">
+            <h2 id="p-label-tipe" class="font-bold underline text-lg italic uppercase"></h2>
+            <p>No: <span id="p-no"></span></p>
+            <p>Tgl: <span id="p-tgl"></span></p>
+        </div>
+    </div>
+    <table class="w-full border border-black mb-4">
+        <thead><tr class="bg-gray-100 italic">
+            <th class="border border-black p-2">URAIAN JASA / SPAREPART</th>
+            <th class="border border-black p-2 text-right no-print-wo">HARGA</th>
+            <th class="border border-black p-2 text-center">QTY</th>
+            <th class="border border-black p-2 text-right no-print-wo">SUBTOTAL</th>
+        </tr></thead>
+        <tbody id="p-body"></tbody>
+        <tfoot id="p-foot-total"><tr>
+            <th colspan="3" class="text-right border border-black p-2 font-bold uppercase">Grand Total</th>
+            <th class="text-right border border-black p-2 font-bold" id="p-total"></th>
+        </tr></tfoot>
+    </table>
+    <div class="text-[12px] mb-2 font-bold">Catatan: <span id="p-cat" class="italic font-normal"></span></div>
+    <div id="p-box-rek" class="text-[11px] mb-6 p-2 border border-dashed border-gray-400 bg-gray-50">
+        Pembayaran Transfer: <span id="p-rek" class="font-bold"></span>
+    </div>
+    <div class="flex justify-between text-center mt-12 text-[12px]">
+        <div class="w-40 border-t border-black pt-1"><p>Hormat Kami,</p><br><p>( <span id="p-owner"></span> )</p></div>
+        <div class="w-40 border-t border-black pt-1"><p>Pelanggan,</p><br><p>( ............ )</p></div>
+    </div>
+</div>
+
+<nav class="nav-bottom no-print">
+    <div class="nav-btn active" onclick="showView('nota', this)">ENTRY</div>
+    <div class="nav-btn" onclick="showView('antrean', this)">ANTREAN</div>
+    <div class="nav-btn" onclick="showView('riwayat', this)">RIWAYAT</div>
+    <div class="nav-btn" onclick="showView('laporan', this)">LAPORAN</div>
+    <div class="nav-btn" onclick="showView('setting', this)">SETTING</div>
 </nav>
 
 <script>
-    let db_history = JSON.parse(localStorage.getItem('b_history_v6') || "[]");
-    let db_biaya = JSON.parse(localStorage.getItem('b_biaya_v6') || "[]");
-    let db_queue = JSON.parse(localStorage.getItem('b_queue_v6') || "[]");
-    let last_serial = parseInt(localStorage.getItem('b_serial_v6') || "0");
+    const DEFAULT_GS_URL = "";
+    const KEY = "BENGKEL_PRO_V157_MASTER";
+    
+    let db = JSON.parse(localStorage.getItem(KEY)) || { 
+        settings: { gsheet: DEFAULT_GS_URL, nama: "BENGKEL PRO", rek: "", prefix: "DK012026-", nextNo: 1 }, 
+        transaksi: [], 
+        antrean: [] 
+    };
 
-    // LOGIKA NOMOR NOTA OTOMATIS
-    function getNextNota() {
-        const d = new Date();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const yyyy = d.getFullYear();
-        const serial = String(last_serial + 1).padStart(4, '0');
-        return `DK${mm}${yyyy}-${serial}`;
-    }
-
-    function updateNotaLabel() {
-        document.getElementById('nextNotaLabel').innerText = "No Nota: " + getNextNota();
-    }
-
-    function openTab(evt, tabName) {
-        document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
-        document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
-        document.getElementById(tabName).classList.add("active");
-        if(evt) evt.currentTarget.classList.add("active");
-        if(tabName === 'tab-input') updateNotaLabel();
-    }
-
-    function addRow() {
-        let tb = document.querySelector("#itemTable tbody");
-        let row = tb.insertRow();
-        row.innerHTML = `<td><select class="item-cat"><option value="Jasa">Jasa</option><option value="Part">Part</option></select></td>
-        <td><input type="text" class="item-desc"></td><td><input type="number" class="item-qty" oninput="calculate()"></td>
-        <td><input type="number" class="item-price" oninput="calculate()"></td><td class="item-sub">0</td>
-        <td><button class="btn-red" onclick="this.parentElement.parentElement.remove(); calculate();">X</button></td>`;
-    }
-
-    function calculate() {
-        let total = 0;
-        document.querySelectorAll("#itemTable tbody tr").forEach(r => {
-            let q = r.querySelector(".item-qty").value || 0;
-            let p = r.querySelector(".item-price").value || 0;
-            let sub = q * p;
-            r.querySelector(".item-sub").innerText = sub.toLocaleString('id-ID');
-            total += sub;
-        });
-        return total;
-    }
-
-    function saveToQueue() {
-        let d = getFormData(); if(!d.nama) return alert("Nama Kosong!");
-        d.noNota = getNextNota(); // Assign no nota
-        db_queue.push(d); 
-        last_serial++; // Increment serial
-        localStorage.setItem('b_serial_v6', last_serial);
-        localStorage.setItem('b_queue_v6', JSON.stringify(db_queue));
-        resetForm(); loadQueue(); updateNotaLabel(); alert("Berhasil simpan ke antrean");
-    }
-
-    function loadQueue() {
-        let h = ""; db_queue.forEach((q, i) => {
-            h += `<div class="queue-badge"><span><strong>${q.noNota}</strong> - ${q.nama} (${q.unit})</span>
-            <div><button class="btn btn-blue" onclick="editQueue(${i})">Buka</button><button class="btn btn-red" onclick="delQueue(${i})">X</button></div></div>`;
-        });
-        document.getElementById('queue-list').innerHTML = h;
-    }
-
-    function editQueue(i) {
-        let q = db_queue[i];
-        document.getElementById('custName').value = q.nama; document.getElementById('carInfo').value = q.unit;
-        document.getElementById('km').value = q.km; document.getElementById('mekanikName').value = q.mekanik;
-        document.getElementById('catatan').value = q.catatan;
-        let tb = document.querySelector("#itemTable tbody"); tb.innerHTML = "";
-        q.items.forEach(it => {
-            let row = tb.insertRow();
-            row.innerHTML = `<td><select class="item-cat"><option value="Jasa" ${it.cat=='Jasa'?'selected':''}>Jasa</option><option value="Part" ${it.cat=='Part'?'selected':''}>Part</option></select></td>
-            <td><input type="text" class="item-desc" value="${it.d}"></td><td><input type="number" class="item-qty" value="${it.q}" oninput="calculate()"></td>
-            <td><input type="number" class="item-price" value="${it.p}" oninput="calculate()"></td><td class="item-sub">0</td>
-            <td><button class="btn-red" onclick="this.parentElement.parentElement.remove(); calculate();">X</button></td>`;
-        });
-        calculate(); db_queue.splice(i, 1); localStorage.setItem('b_queue_v6', JSON.stringify(db_queue)); loadQueue();
-    }
-
-    function delQueue(i) { db_queue.splice(i,1); localStorage.setItem('b_queue_v6', JSON.stringify(db_queue)); loadQueue(); }
-
-    function getFormData() {
-        let its = []; let sj = 0; let sp = 0;
-        document.querySelectorAll("#itemTable tbody tr").forEach(r => {
-            let c = r.querySelector(".item-cat").value; let d = r.querySelector(".item-desc").value;
-            let q = Number(r.querySelector(".item-qty").value) || 0; let p = Number(r.querySelector(".item-price").value) || 0;
-            if(d) { its.push({cat:c, d:d, q:q, p:p}); if(c === 'Jasa') sj += (q*p); else sp += (q*p); }
-        });
-        return {
-            noNota: getNextNota(),
-            nama: document.getElementById('custName').value, unit: document.getElementById('carInfo').value,
-            km: document.getElementById('km').value, mekanik: document.getElementById('mekanikName').value,
-            catatan: document.getElementById('catatan').value, items: its, subJasa: sj, subPart: sp, total: sj + sp,
-            tgl: new Date().toLocaleDateString('id-ID')
-        };
-    }
-
-    function generate(tipe, save = false) {
-        let d = getFormData(); if(!d.nama) return alert("Nama Pelanggan Kosong!");
-        document.getElementById('printOutput').style.display = 'block';
-        document.getElementById('p-tipe').innerText = tipe.toUpperCase();
-        document.getElementById('p-noNota').innerText = "No: " + d.noNota;
-        document.getElementById('p-cust').innerText = d.nama;
-        document.getElementById('p-unit').innerText = d.unit;
-        document.getElementById('p-km').innerText = d.km;
-        document.getElementById('p-tgl').innerText = "Tgl: " + d.tgl;
-        document.getElementById('p-catatan').innerText = d.catatan;
-        document.getElementById('p-mekanik').innerText = d.mekanik;
+    function init() {
+        document.getElementById('in-tgl').valueAsDate = new Date();
+        updateNotaDisplay();
+        document.getElementById('disp-nama').innerText = db.settings.nama || "BENGKEL PRO";
         
-        let h = "<strong>A. JASA</strong><table style='width:100%'><tr><th>Uraian Pekerjaan</th><th style='text-align:right'>Biaya</th></tr>";
-        d.items.filter(x => x.cat === 'Jasa').forEach(i => { h += `<tr><td>${i.d}</td><td style='text-align:right'>${i.p.toLocaleString()}</td></tr>`; });
-        h += "</table><strong style='display:block;margin-top:5px'>B. SPAREPART</strong><table style='width:100%'><tr><th>Item</th><th>Qty</th><th>Harga</th><th style='text-align:right'>Total</th></tr>";
-        d.items.filter(x => x.cat === 'Part').forEach(i => { h += `<tr><td>${i.d}</td><td>${i.q}</td><td>${i.p.toLocaleString()}</td><td style='text-align:right'>${(i.q*i.p).toLocaleString()}</td></tr>`; });
-        h += "</table>";
-        document.getElementById('p-tables').innerHTML = h;
-        document.getElementById('p-total').innerText = d.total.toLocaleString();
-
-        if(save) {
-            db_history.push(d); 
-            last_serial++; // Increment serial
-            localStorage.setItem('b_serial_v6', last_serial);
-            localStorage.setItem('b_history_v6', JSON.stringify(db_history));
-            setTimeout(() => { window.print(); if(confirm("Selesai Cetak? Kosongkan Form?")) resetForm(); updateNotaLabel(); }, 500);
-        } else {
-            setTimeout(() => { window.print(); }, 500);
-        }
-        window.scrollTo(0, document.body.scrollHeight);
+        document.getElementById('s-nama').value = db.settings.nama || "";
+        document.getElementById('s-alamat').value = db.settings.alamat || "";
+        document.getElementById('s-hp').value = db.settings.hp || "";
+        document.getElementById('s-owner').value = db.settings.owner || "";
+        document.getElementById('s-rek').value = db.settings.rek || "";
+        document.getElementById('s-prefix').value = db.settings.prefix || "DK012026-";
+        document.getElementById('s-next-no').value = db.settings.nextNo || 1;
+        document.getElementById('s-gsheet').value = db.settings.gsheet || "";
+        
+        addItemRow();
     }
 
-    function resetForm() {
-        document.getElementById('custName').value = ""; document.getElementById('carInfo').value = "";
-        document.getElementById('km').value = ""; document.getElementById('catatan').value = "";
-        document.getElementById('mekanikName').value = "";
-        document.querySelector("#itemTable tbody").innerHTML = `<tr><td><select class="item-cat"><option value="Jasa">Jasa</option><option value="Part">Part</option></select></td><td><input type="text" class="item-desc"></td><td><input type="number" class="item-qty" oninput="calculate()"></td><td><input type="number" class="item-price" oninput="calculate()"></td><td class="item-sub">0</td><td>-</td></tr>`;
-        document.getElementById('printOutput').style.display = 'none';
-        updateNotaLabel();
+    function updateNotaDisplay() {
+        const num = String(db.settings.nextNo).padStart(3, '0');
+        document.getElementById('in-nota').value = db.settings.prefix + num;
     }
 
-    function updateWO() {
-        let d = getFormData();
-        let h = `<strong>No Nota:</strong> ${d.noNota} | <strong>Unit:</strong> ${d.unit}<br><strong>Mekanik:</strong> ${d.mekanik}<hr><ul>`;
-        d.items.forEach(i => { h += `<li>[ ] ${i.d} (${i.q})</li>`; });
-        h += `</ul><strong>Cat:</strong> ${d.catatan}`;
-        document.getElementById('wo-content').innerHTML = h;
+    function addItemRow(data = {j:'', p:'', h:0, q:1}) {
+        const div = document.createElement('div'); div.className = "grid-item item-row";
+        div.innerHTML = `
+            <input type="text" class="i-jasa" value="${data.j}" placeholder="Jasa">
+            <input type="text" class="i-part" value="${data.p}" placeholder="Part">
+            <input type="number" class="i-price" value="${data.h}">
+            <input type="number" class="i-qty" value="${data.q}">
+            <input type="text" readonly class="i-sub bg-gray-50 text-right font-bold" value="0">
+            <button onclick="this.parentElement.remove(); recalc()" class="text-red-500 font-bold">×</button>`;
+        document.getElementById('item-list').appendChild(div);
+        recalc();
     }
 
-    function loadRiwayat() {
-        let s = document.getElementById('search').value.toLowerCase(); let htl = "";
-        [...db_history].reverse().forEach((h, i) => {
-            let idx = db_history.length - 1 - i;
-            if(h.nama.toLowerCase().includes(s) || h.unit.toLowerCase().includes(s) || h.noNota.toLowerCase().includes(s)) {
-                let det = h.items.map(it => `<div>• <span class="${it.cat=='Jasa'?'badge-jasa':'badge-part'}">[${it.cat}]</span> ${it.d} (${it.q}x${it.p.toLocaleString()})</div>`).join("");
-                htl += `<tr onclick="toggleDetail(${idx})" style="cursor:pointer">
-                <td style="color:var(--primary); font-weight:bold;">+</td><td>${h.noNota}</td><td>${h.tgl}</td><td>${h.nama}</td><td>${h.unit}</td><td>${h.total.toLocaleString()}</td>
-                <td><button class="btn-red" style="padding:4px" onclick="event.stopPropagation(); delHistory(${idx})">Del</button></td></tr>
-                <tr id="det-${idx}" class="detail-row"><td colspan="7"><div class="detail-box">
-                <strong>Mekanik:</strong> ${h.mekanik}<br><strong>Detail:</strong>${det}<br><i>Cat: ${h.catatan}</i></div></td></tr>`;
+    function recalc() {
+        let grand = 0;
+        document.querySelectorAll('.item-row').forEach(row => {
+            const h = parseFloat(row.querySelector('.i-price').value) || 0;
+            const q = parseFloat(row.querySelector('.i-qty').value) || 0;
+            const sub = h * q;
+            row.querySelector('.i-sub').value = sub.toLocaleString();
+            grand += sub;
+        });
+        document.getElementById('grand-total').innerText = grand.toLocaleString();
+    }
+
+    async function prosesTransaksi() {
+        const tipe = document.getElementById('in-tipe').value;
+        const nopol = document.getElementById('in-nopol').value.toUpperCase();
+        if(!nopol) return alert("Nomor Polisi Wajib Diisi!");
+
+        let items = []; let rowsHtml = "";
+        document.querySelectorAll('.item-row').forEach(row => {
+            const j = row.querySelector('.i-jasa').value;
+            const p = row.querySelector('.i-part').value;
+            const h = parseFloat(row.querySelector('.i-price').value) || 0;
+            const q = parseFloat(row.querySelector('.i-qty').value) || 0;
+            if(j || p) {
+                items.push({ j, p, h, q, sub: h*q });
+                const hargaDisplay = tipe === "WO" ? "" : h.toLocaleString();
+                const subDisplay = tipe === "WO" ? "" : (h*q).toLocaleString();
+                
+                rowsHtml += `<tr>
+                    <td class="border border-black p-2 text-xs">${j} ${p}</td>
+                    <td class="border border-black p-2 text-right text-xs no-print-wo">${hargaDisplay}</td>
+                    <td class="border border-black p-2 text-center text-xs">${q}</td>
+                    <td class="border border-black p-2 text-right text-xs no-print-wo">${subDisplay}</td>
+                </tr>`;
             }
         });
-        document.getElementById('historyList').innerHTML = htl;
+
+        // Tampilan khusus WO vs Nota
+        if(tipe === "WO") {
+            document.querySelectorAll('.no-print-wo').forEach(el => el.style.display = 'none');
+            document.getElementById('p-foot-total').style.display = 'none';
+            document.getElementById('p-box-rek').style.display = 'none';
+        } else {
+            document.querySelectorAll('.no-print-wo').forEach(el => el.style.display = 'table-cell');
+            document.getElementById('p-foot-total').style.display = 'table-footer-group';
+            document.getElementById('p-box-rek').style.display = 'block';
+        }
+
+        document.getElementById('p-toko').innerText = db.settings.nama;
+        document.getElementById('p-alamat-toko').innerText = db.settings.alamat;
+        document.getElementById('p-hp-toko').innerText = "HP: " + db.settings.hp;
+        document.getElementById('p-owner').innerText = db.settings.owner;
+        document.getElementById('p-rek').innerText = db.settings.rek;
+        document.getElementById('p-label-tipe').innerText = tipe;
+        document.getElementById('p-nama').innerText = document.getElementById('in-nama').value;
+        document.getElementById('p-unit').innerText = document.getElementById('in-merk').value;
+        document.getElementById('p-nopol').innerText = nopol;
+        document.getElementById('p-km').innerText = document.getElementById('in-km').value;
+        document.getElementById('p-no').innerText = document.getElementById('in-nota').value;
+        document.getElementById('p-tgl').innerText = document.getElementById('in-tgl').value;
+        document.getElementById('p-cat').innerText = document.getElementById('in-catatan').value;
+        document.getElementById('p-body').innerHTML = rowsHtml;
+        document.getElementById('p-total').innerText = document.getElementById('grand-total').innerText;
+
+        const common = {
+            tgl: document.getElementById('in-tgl').value,
+            noTrx: document.getElementById('in-nota').value,
+            nopol: nopol,
+            nama: document.getElementById('in-nama').value,
+            merk: document.getElementById('in-merk').value,
+            catatan: document.getElementById('in-catatan').value
+        };
+
+        if(tipe === "NOTA") {
+            items.forEach(it => {
+                const payload = { ...common, uraian: it.j, sparepart: it.p, harga: it.h, qty: it.q, jumlah: it.sub };
+                db.transaksi.push(payload);
+                if(db.settings.gsheet) fetch(db.settings.gsheet, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            });
+            db.settings.nextNo++; // Increment nota hanya jika NOTA (Omzet)
+        } else {
+            db.antrean.push({...common, items, tipe, total: document.getElementById('grand-total').innerText});
+        }
+
+        localStorage.setItem(KEY, JSON.stringify(db));
+        window.print();
+        setTimeout(() => { location.reload(); }, 500);
     }
 
-    function toggleDetail(i) { let e = document.getElementById('det-'+i); e.style.display = (e.style.display==='table-row'?'none':'table-row'); }
-    function delHistory(i) { if(confirm("Hapus?")) { db_history.splice(i,1); localStorage.setItem('b_history_v6',JSON.stringify(db_history)); loadRiwayat(); }}
-
-    function saveBiaya() {
-        let b = { tgl: new Date().toLocaleDateString('id-ID'), cat: document.getElementById('expCat').value, nom: Number(document.getElementById('expNom').value), desc: document.getElementById('expDesc').value };
-        db_biaya.push(b); localStorage.setItem('b_biaya_v6', JSON.stringify(db_biaya)); loadBiaya();
-        document.getElementById('expNom').value = ""; document.getElementById('expDesc').value = "";
+    function renderRiwayat() {
+        const s = document.getElementById('f-search').value.toLowerCase();
+        const f = db.transaksi.filter(x => (x.nopol + x.nama + x.noTrx).toLowerCase().includes(s));
+        document.getElementById('tbody-riwayat').innerHTML = f.slice().reverse().map(x => `
+            <tr>
+                <td>${x.tgl}</td><td>${x.noTrx}</td><td>${x.nopol}</td><td>${x.nama}</td>
+                <td>${x.merk}</td><td>${x.uraian}</td><td>${x.sparepart}</td>
+                <td>${x.harga.toLocaleString()}</td><td>${x.qty}</td>
+                <td>${x.jumlah.toLocaleString()}</td><td>${x.catatan || '-'}</td>
+            </tr>
+        `).join('');
     }
 
-    function loadBiaya() {
-        let h = ""; db_biaya.forEach((b, i) => { h += `<tr><td>${b.tgl}</td><td>${b.cat}</td><td>${b.desc}</td><td>${b.nom.toLocaleString()}</td><td><button class="btn-red" onclick="delBiaya(${i})">X</button></td></tr>`; });
-        document.getElementById('biayaList').innerHTML = h;
+    function renderLaporan() {
+        const tJasa = db.transaksi.filter(x => x.uraian !== "").reduce((a,c) => a + (parseFloat(c.jumlah)||0), 0);
+        const tPart = db.transaksi.filter(x => x.sparepart !== "").reduce((a,c) => a + (parseFloat(c.jumlah)||0), 0);
+        document.getElementById('box-laporan').innerHTML = `
+            <div class="card border-l-8 border-blue-600"><p class="text-[10px] font-bold uppercase">Laporan Jasa</p><h2 class="text-2xl font-black text-blue-700">Rp ${tJasa.toLocaleString()}</h2></div>
+            <div class="card border-l-8 border-green-600"><p class="text-[10px] font-bold uppercase">Laporan Sparepart</p><h2 class="text-2xl font-black text-green-700">Rp ${tPart.toLocaleString()}</h2></div>
+            <div class="card bg-slate-900 text-white"><p class="text-[10px] opacity-70 italic uppercase">Total Omzet</p><h2 class="text-3xl font-black text-green-400">Rp ${(tJasa+tPart).toLocaleString()}</h2></div>
+        `;
     }
 
-    function delBiaya(i) { db_biaya.splice(i,1); localStorage.setItem('b_biaya_v6', JSON.stringify(db_biaya)); loadBiaya(); }
+    function renderAntrean() {
+        document.getElementById('list-antrean').innerHTML = db.antrean.map(x => `
+            <div class="card flex justify-between items-center border-l-4 border-orange-500">
+                <div><b class="text-blue-700">${x.nopol}</b> - ${x.nama} (${x.tipe})<br><small>Total: ${x.total}</small></div>
+                <div class="flex gap-2"><button onclick="loadAntrean('${x.noTrx}')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold uppercase">Proses</button><button onclick="hapusAntrean('${x.noTrx}')" class="text-red-500 text-xs font-bold">×</button></div>
+            </div>
+        `).join('') || '<p class="text-center italic text-gray-400">Antrean Kosong</p>';
+    }
 
-    function loadLaporan() {
-        let j = db_history.reduce((a,b) => a + (b.subJasa || 0), 0);
-        let p = db_history.reduce((a,b) => a + (b.subPart || 0), 0);
-        let out = db_biaya.reduce((a,b) => a + b.nom, 0);
-        document.getElementById('r-jasa').innerText = j.toLocaleString();
-        document.getElementById('r-part').innerText = p.toLocaleString();
-        document.getElementById('r-total-out').innerText = out.toLocaleString();
-        document.getElementById('r-profit').innerText = ((j+p)-out).toLocaleString();
+    function loadAntrean(noTrx) {
+        const x = db.antrean.find(i => i.noTrx === noTrx);
+        if(!x) return;
+        document.getElementById('in-nopol').value = x.nopol;
+        document.getElementById('in-nama').value = x.nama;
+        document.getElementById('in-merk').value = x.merk;
+        document.getElementById('in-catatan').value = x.catatan;
+        document.getElementById('item-list').innerHTML = '<div class="grid-item text-[9px] font-bold text-gray-400 uppercase"><div>Jasa</div><div>Part</div><div>Harga</div><div>Qty</div><div>Total</div><div></div></div>';
+        x.items.forEach(it => addItemRow({j: it.j, p: it.p, h: it.h, q: it.q}));
+        db.antrean = db.antrean.filter(i => i.noTrx !== noTrx);
+        localStorage.setItem(KEY, JSON.stringify(db));
+        showView('nota', document.querySelectorAll('.nav-btn')[0]);
     }
 
     function saveSettings() {
-        localStorage.setItem('s_nama', document.getElementById('setNama').value);
-        localStorage.setItem('s_alamat', document.getElementById('setAlamat').value);
-        localStorage.setItem('s_hp', document.getElementById('setHP').value);
-        localStorage.setItem('s_rek', document.getElementById('setRek').value);
-        localStorage.setItem('s_sign', document.getElementById('setSign').value);
-        alert("Disimpan"); location.reload();
-    }
-
-    function loadSettings() {
-        let n = localStorage.getItem('s_nama') || "BENGKEL PRO";
-        document.getElementById('displayNamaBengkel').innerText = n;
-        document.getElementById('p-namaBengkel').innerText = n;
-        document.getElementById('p-alamatBengkel').innerText = localStorage.getItem('s_alamat') || "Alamat";
-        document.getElementById('p-hpBengkel').innerText = "HP: " + (localStorage.getItem('s_hp') || "-");
-        document.getElementById('p-rekening').innerText = localStorage.getItem('s_rek') || "";
-        document.getElementById('p-ownerSign').innerText = "( " + (localStorage.getItem('s_sign') || "Pemilik") + " )";
-        document.getElementById('setNama').value = n;
-        document.getElementById('setAlamat').value = localStorage.getItem('s_alamat');
-        document.getElementById('setHP').value = localStorage.getItem('s_hp');
-        document.getElementById('setRek').value = localStorage.getItem('s_rek');
-        document.getElementById('setSign').value = localStorage.getItem('s_sign');
+        db.settings = { 
+            nama: document.getElementById('s-nama').value.toUpperCase(), 
+            alamat: document.getElementById('s-alamat').value, 
+            hp: document.getElementById('s-hp').value, 
+            owner: document.getElementById('s-owner').value, 
+            rek: document.getElementById('s-rek').value,
+            prefix: document.getElementById('s-prefix').value,
+            nextNo: parseInt(document.getElementById('s-next-no').value) || 1,
+            gsheet: document.getElementById('s-gsheet').value 
+        };
+        localStorage.setItem(KEY, JSON.stringify(db));
+        alert("Master Settings Berhasil Disimpan!"); location.reload();
     }
 
     function exportData() {
-        let a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([JSON.stringify(localStorage)], {type: 'application/json'}));
-        a.download = 'backup_bengkel.json'; a.click();
+        const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `backup_bengkel_pro_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
     }
 
-    function importData() {
-        let i = document.createElement('input'); i.type = 'file';
-        i.onchange = e => {
-            let r = new FileReader();
-            r.onload = ev => {
-                let d = JSON.parse(ev.target.result);
-                Object.keys(d).forEach(k => localStorage.setItem(k, d[k]));
-                location.reload();
-            };
-            r.readAsText(e.target.files[0]);
-        }; i.click();
+    function importData(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if(confirm("Timpa data lokal dengan backup ini?")) {
+                    db = imported;
+                    localStorage.setItem(KEY, JSON.stringify(db));
+                    alert("Data Berhasil Direstore!"); location.reload();
+                }
+            } catch(err) { alert("File tidak valid!"); }
+        };
+        reader.readAsText(file);
     }
 
-    function resetData() { if(confirm("Reset semua data?")) { localStorage.clear(); location.reload(); } }
+    function showView(v, el) {
+        document.querySelectorAll('.view').forEach(x => x.classList.add('hidden'));
+        document.getElementById('menu-' + v).classList.remove('hidden');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        if(v === 'antrean') renderAntrean();
+        if(v === 'riwayat') renderRiwayat();
+        if(v === 'laporan') renderLaporan();
+    }
 
-    window.onload = () => { loadSettings(); loadQueue(); updateNotaLabel(); };
+    function toggleNotaDisplay() {
+        // Hanya visual feedback jika diperlukan
+    }
+
+    function hapusAntrean(noTrx) { if(confirm("Hapus?")) { db.antrean = db.antrean.filter(i => i.noTrx !== noTrx); localStorage.setItem(KEY, JSON.stringify(db)); renderAntrean(); } }
+    function resetData() { if(confirm("Reset seluruh data lokal?")) { localStorage.clear(); location.reload(); } }
+    init();
 </script>
 </body>
 </html>
