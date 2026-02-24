@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bengkel Pro - Master V15.29</title>
+    <title>Bengkel Pro - Master V15.35</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', sans-serif; padding-bottom: 90px; background: #f4f7fa; }
@@ -18,11 +18,11 @@
         @media print {
             @page { size: A4 portrait; margin: 10mm; }
             body { padding: 0; background: white; height: auto; }
-            .no-print, .nav-bottom, button, .bg-blue-900, .view { display: none !important; }
-            #print-area { display: block !important; width: 100%; visibility: visible; }
+            .no-print, .nav-bottom, button, .bg-blue-900, .view, .filter-area { display: none !important; }
+            #print-area, #print-laporan { display: block !important; width: 100%; visibility: visible; }
             .header-nota { border-bottom: 3px solid black; padding-bottom: 8px; margin-bottom: 10px; }
             table { width: 100% !important; border-collapse: collapse !important; }
-            th, td { border: 1px solid black !important; padding: 8px !important; font-size: 14px !important; color: black !important; }
+            th, td { border: 1px solid black !important; padding: 8px !important; font-size: 12px !important; color: black !important; }
             .cat-row td { background: #f2f2f2 !important; font-weight: bold !important; text-align: center !important; }
             .p-price-col.wo-hidden { display: none !important; }
         }
@@ -36,8 +36,8 @@
 <body>
 
 <div class="bg-blue-900 text-white p-4 sticky top-0 flex justify-between items-center no-print z-50">
-    <h1 id="header-nama-bengkel" class="font-bold uppercase italic text-xl text-yellow-400">LOADING...</h1>
-    <div class="text-[9px] bg-green-600 px-2 py-1 rounded uppercase font-bold text-white">V15.29</div>
+    <h1 id="header-nama-bengkel" class="font-bold uppercase italic text-xl text-yellow-400">BENGKEL PRO</h1>
+    <div class="text-[9px] bg-green-600 px-2 py-1 rounded uppercase font-bold text-white">V15.35</div>
 </div>
 
 <div class="p-4 no-print">
@@ -46,7 +46,7 @@
             <div class="grid grid-cols-2 gap-2 mb-2">
                 <select id="in-tipe" class="font-bold text-blue-700 bg-blue-50">
                     <option value="NOTA">NOTA (OMZET)</option>
-                    <option value="WO">WORKING ORDER (TANPA HARGA)</option>
+                    <option value="WO">WORKING ORDER</option>
                     <option value="ESTIMASI">ESTIMASI</option>
                 </select>
                 <input type="text" id="in-nota" readonly class="bg-gray-100 font-bold text-center">
@@ -78,9 +78,16 @@
 
     <div id="menu-biaya" class="view hidden">
         <div class="card">
-            <h3 class="font-bold mb-3 border-b pb-1 text-red-600 uppercase text-xs">Input Pengeluaran Operasional</h3>
+            <h3 class="font-bold mb-3 border-b pb-1 text-red-600 text-xs uppercase">Input Pengeluaran</h3>
             <input type="date" id="b-tgl" class="mb-2">
-            <input type="text" id="b-nama" placeholder="Keterangan (Gaji/Listrik/Sewa/Sparepart Stok)" class="mb-2">
+            <select id="b-kategori" class="mb-2 font-bold bg-red-50 text-red-700">
+                <option value="Gaji">Gaji Karyawan</option>
+                <option value="Sparepart">Pembelian Sparepart</option>
+                <option value="Alat">Tabungan Pembelian Alat</option>
+                <option value="Sewa">Sewa Tanah</option>
+                <option value="Operasional">Operasional Lainnya</option>
+            </select>
+            <input type="text" id="b-nama" placeholder="Keterangan Pengeluaran" class="mb-2">
             <input type="number" id="b-jumlah" placeholder="Jumlah Rp" class="mb-2">
             <button onclick="simpanBiaya()" class="w-full bg-red-600 text-white py-2 rounded font-bold uppercase text-xs">Simpan Biaya</button>
         </div>
@@ -90,7 +97,7 @@
     <div id="menu-antrean" class="view hidden"><div id="list-antrean" class="space-y-2"></div></div>
 
     <div id="menu-riwayat" class="view hidden">
-        <input type="text" id="f-search" placeholder="Cari Nopol/Nota..." oninput="renderRiwayat()" class="w-full mb-2">
+        <input type="text" id="f-search" placeholder="Cari Nopol/Nota/Nama..." oninput="renderRiwayat()" class="w-full mb-2">
         <div class="table-container">
             <table id="table-riwayat">
                 <thead><tr class="bg-gray-100"><th>Aksi</th><th>Tgl</th><th>Nota</th><th>Nopol</th><th>KM</th><th>Merk</th><th>Nama</th><th>Jasa</th><th>Part</th><th>Harga</th><th>Qty</th><th>Total</th><th>Catatan</th></tr></thead>
@@ -99,7 +106,25 @@
         </div>
     </div>
 
-    <div id="menu-laporan" class="view hidden"><div id="box-laporan" class="space-y-4"></div></div>
+    <div id="menu-laporan" class="view hidden">
+        <div class="card filter-area">
+            <div class="grid grid-cols-2 gap-2 mb-2">
+                <select id="lap-bulan" onchange="renderLaporan()">
+                    <option value="01">Januari</option><option value="02">Februari</option><option value="03">Maret</option>
+                    <option value="04">April</option><option value="05">Mei</option><option value="06">Juni</option>
+                    <option value="07">Juli</option><option value="08">Agustus</option><option value="09">September</option>
+                    <option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option>
+                </select>
+                <input type="number" id="lap-tahun" onchange="renderLaporan()">
+            </div>
+            <button onclick="window.print()" class="w-full bg-green-600 text-white py-2 rounded font-bold text-xs uppercase">Print Laporan Bulanan</button>
+        </div>
+        <div id="box-laporan" class="space-y-4"></div>
+        <div id="print-laporan" class="hidden mt-8">
+            <h2 class="text-center font-bold text-xl uppercase border-b-2 border-black pb-2 mb-4">LAPORAN KEUANGAN BULANAN</h2>
+            <div id="print-content-laporan"></div>
+        </div>
+    </div>
 
     <div id="menu-setting" class="view hidden">
         <div class="card space-y-2 text-xs">
@@ -110,12 +135,16 @@
             <input type="text" id="s-owner" placeholder="Nama Owner">
             <input type="text" id="s-rek" placeholder="Info Rekening">
             <div class="grid grid-cols-2 gap-2"><input type="text" id="s-prefix"><input type="number" id="s-next-no"></div>
-            <button onclick="saveSettings()" class="w-full bg-black text-white py-2 rounded font-bold uppercase">Simpan</button>
+            <button onclick="saveSettings()" class="w-full bg-black text-white py-2 rounded font-bold uppercase">Simpan Setting</button>
         </div>
-        <div class="card grid grid-cols-2 gap-2">
-            <button onclick="exportData()" class="bg-green-600 text-white py-2 rounded text-[10px] font-bold uppercase">Export JSON</button>
-            <button onclick="document.getElementById('importFile').click()" class="bg-orange-500 text-white py-2 rounded text-[10px] font-bold uppercase">Import JSON</button>
+        <div class="card space-y-2">
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="exportData()" class="bg-green-600 text-white py-2 rounded text-[10px] font-bold uppercase">Export JSON</button>
+                <button onclick="document.getElementById('importFile').click()" class="bg-orange-500 text-white py-2 rounded text-[10px] font-bold uppercase">Import JSON</button>
+            </div>
+            <button onclick="document.getElementById('csvFile').click()" class="w-full bg-blue-600 text-white py-2 rounded text-[10px] font-bold uppercase">Import Data 2021 (CSV)</button>
             <input type="file" id="importFile" class="hidden" onchange="importData(event)">
+            <input type="file" id="csvFile" class="hidden" accept=".csv" onchange="importCSV(event)">
         </div>
         <button onclick="resetData()" class="w-full mt-4 text-red-500 border border-red-500 py-2 rounded text-[10px] font-bold uppercase">Reset Semua Data</button>
     </div>
@@ -153,7 +182,7 @@
 </nav>
 
 <script>
-    const KEY = "BENGKEL_PRO_V1529";
+    const KEY = "BENGKEL_PRO_V1535";
     let db = JSON.parse(localStorage.getItem(KEY)) || { settings: { gsheet: "", nama: "BENGKEL PRO", rek: "", prefix: "DK-", nextNo: 1, alamat: "", hp: "", owner: "" }, transaksi: [], antrean: [], pengeluaran: [] };
 
     function init() {
@@ -161,6 +190,9 @@
         document.getElementById('b-tgl').valueAsDate = new Date();
         const s = db.settings;
         document.getElementById('header-nama-bengkel').innerText = s.nama || "BENGKEL PRO";
+        document.getElementById('lap-tahun').value = new Date().getFullYear();
+        document.getElementById('lap-bulan').value = String(new Date().getMonth() + 1).padStart(2, '0');
+        
         document.getElementById('s-nama').value = s.nama; document.getElementById('s-alamat').value = s.alamat;
         document.getElementById('s-hp').value = s.hp; document.getElementById('s-owner').value = s.owner;
         document.getElementById('s-rek').value = s.rek; document.getElementById('s-prefix').value = s.prefix;
@@ -184,17 +216,6 @@
         document.getElementById('grand-total').innerText = t.toLocaleString('id-ID');
     }
 
-    function simpanBiaya() {
-        const t = document.getElementById('b-tgl').value, n = document.getElementById('b-nama').value, j = parseFloat(document.getElementById('b-jumlah').value) || 0;
-        if(!n || j <= 0) return alert("Lengkapi data!");
-        db.pengeluaran.push({tgl:t, nama:n, jumlah:j}); localStorage.setItem(KEY, JSON.stringify(db));
-        document.getElementById('b-nama').value = ""; document.getElementById('b-jumlah').value = ""; renderBiaya(); alert("Biaya Operasional Tersimpan!");
-    }
-
-    function renderBiaya() {
-        document.getElementById('list-biaya').innerHTML = db.pengeluaran.slice().reverse().map(b => `<div class="flex justify-between border-b py-1"><span>${b.tgl} - ${b.nama}</span><span class="font-bold text-red-600">Rp ${b.jumlah.toLocaleString()}</span></div>`).join('');
-    }
-
     function prosesTransaksi() {
         const tipe = document.getElementById('in-tipe').value, nopol = document.getElementById('in-nopol').value.toUpperCase();
         if(!nopol) return alert("Nopol wajib!");
@@ -202,17 +223,16 @@
             const j = r.querySelector('.i-jasa').value, p = r.querySelector('.i-part').value, h = parseFloat(r.querySelector('.i-price').value) || 0, q = parseFloat(r.querySelector('.i-qty').value) || 0;
             if(j || p) items.push({j, p, h, q, s:h*q});
         });
-        const sorted = [...items.filter(i => i.j), ...items.filter(i => i.p)];
-        const common = { tgl: document.getElementById('in-tgl').value, noTrx: document.getElementById('in-nota').value, nopol, km: document.getElementById('in-km').value, merk: document.getElementById('in-merk').value, nama: document.getElementById('in-nama').value, catatan: document.getElementById('in-catatan').value };
+        const meta = { tgl: document.getElementById('in-tgl').value, noTrx: document.getElementById('in-nota').value, nopol, km: document.getElementById('in-km').value, merk: document.getElementById('in-merk').value, nama: document.getElementById('in-nama').value, catatan: document.getElementById('in-catatan').value };
 
         if(tipe === "NOTA") {
-            let batch = []; sorted.forEach(i => { const r = {...common, uraian: i.j, sparepart: i.p, harga: i.h, qty: i.q, jumlah: i.s}; db.transaksi.push(r); batch.push(r); });
-            if(db.settings.gsheet) fetch(db.settings.gsheet, { method:'POST', mode:'no-cors', body: JSON.stringify(batch) });
+            items.forEach(i => { db.transaksi.push({...meta, uraian: i.j, sparepart: i.p, harga: i.h, qty: i.q, jumlah: i.s}); });
+            if(db.settings.gsheet) fetch(db.settings.gsheet, { method:'POST', mode:'no-cors', body: JSON.stringify(db.transaksi.filter(t => t.noTrx === meta.noTrx)) });
             db.settings.nextNo++;
         } else {
-            db.antrean.push({...common, items: sorted, tipe, total: document.getElementById('grand-total').innerText });
+            db.antrean.push({...meta, items, tipe});
         }
-        renderCetak(sorted, tipe, common); localStorage.setItem(KEY, JSON.stringify(db)); window.print(); setTimeout(() => location.reload(), 500);
+        renderCetak(items, tipe, meta); localStorage.setItem(KEY, JSON.stringify(db)); window.print(); setTimeout(() => location.reload(), 500);
     }
 
     function renderCetak(items, tipe, meta) {
@@ -228,7 +248,6 @@
         document.getElementById('p-km').innerText = meta.km; document.getElementById('p-total').innerText = items.reduce((acc, i) => acc + i.s, 0).toLocaleString();
         document.getElementById('p-cat').innerText = meta.catatan; document.getElementById('p-rek').innerText = s.rek; document.getElementById('p-owner').innerText = s.owner;
         document.getElementById('p-foot-total').style.display = isWO ? 'none' : 'table-footer-group';
-        document.querySelectorAll('.p-price-col').forEach(el => { if(isWO) el.classList.add('wo-hidden'); else el.classList.remove('wo-hidden'); });
     }
 
     function cetakUlang(nota) {
@@ -236,8 +255,7 @@
         if(rows.length === 0) return alert("Data tidak ditemukan");
         const meta = { tgl: rows[0].tgl, noTrx: rows[0].noTrx, nopol: rows[0].nopol, km: rows[0].km, merk: rows[0].merk, catatan: rows[0].catatan };
         const items = rows.map(r => ({ j: r.uraian, p: r.sparepart, h: r.harga, q: r.qty, s: r.jumlah }));
-        renderCetak(items, "NOTA", meta);
-        window.print();
+        renderCetak(items, "NOTA", meta); window.print();
     }
 
     function renderRiwayat() {
@@ -247,20 +265,49 @@
     }
 
     function renderLaporan() {
-        let o_jasa = 0, o_part = 0, peng = 0;
-        db.transaksi.forEach(t => { if(t.uraian) o_jasa += t.jumlah; if(t.sparepart) o_part += t.jumlah; });
-        db.pengeluaran.forEach(p => peng += p.jumlah);
-        const omz = o_jasa + o_part, laba = omz - peng;
-        document.getElementById('box-laporan').innerHTML = `<div class="card bg-blue-900 text-white text-center"><p class="text-xs uppercase opacity-70">Total Omzet</p><h3 class="text-2xl font-bold">Rp ${omz.toLocaleString()}</h3></div><div class="card bg-red-600 text-white text-center"><p class="text-xs uppercase opacity-70">Total Biaya Operasional</p><h3 class="text-2xl font-bold">Rp ${peng.toLocaleString()}</h3></div><div class="card bg-green-600 text-white text-center"><p class="text-xs uppercase opacity-70">Laba Bersih</p><h3 class="text-3xl font-black">Rp ${laba.toLocaleString()}</h3></div><div class="grid grid-cols-2 gap-2 text-center text-[10px] uppercase font-bold"><div class="card">Omzet Jasa: Rp ${o_jasa.toLocaleString()}</div><div class="card">Omzet Part: Rp ${o_part.toLocaleString()}</div></div>`;
+        const bln = document.getElementById('lap-bulan').value, thn = document.getElementById('lap-tahun').value;
+        const filterTrx = db.transaksi.filter(t => t.tgl.startsWith(`${thn}-${bln}`));
+        const filterExp = db.pengeluaran.filter(e => e.tgl.startsWith(`${thn}-${bln}`));
+        let oJasa = 0, oPart = 0; filterTrx.forEach(t => { if(t.uraian) oJasa += t.jumlah; if(t.sparepart) oPart += t.jumlah; });
+        let catSum = { Gaji: 0, Sparepart: 0, Alat: 0, Sewa: 0, Operasional: 0 };
+        filterExp.forEach(e => { if(catSum[e.kategori] !== undefined) catSum[e.kategori] += e.jumlah; else catSum.Operasional += e.jumlah; });
+        const tExp = Object.values(catSum).reduce((a, b) => a + b, 0); const omzet = oJasa + oPart;
+        const html = `
+            <div class="grid grid-cols-1 gap-2">
+                <div class="card bg-blue-900 text-white text-center"><p class="text-[10px]">OMZET (${bln}/${thn})</p><h3 class="text-2xl font-bold">Rp ${omzet.toLocaleString()}</h3></div>
+                <div class="card bg-red-600 text-white text-center"><p class="text-[10px]">TOTAL BIAYA</p><h3 class="text-2xl font-bold">Rp ${tExp.toLocaleString()}</h3></div>
+                <div class="card bg-green-600 text-white text-center"><p class="text-[10px] font-black">LABA BERSIH</p><h3 class="text-3xl font-black">Rp ${(omzet - tExp).toLocaleString()}</h3></div>
+            </div>
+            <div class="card text-[11px] space-y-1">
+                <p class="font-bold border-b pb-1 uppercase">Rincian:</p>
+                <div class="flex justify-between"><span>Jasa/Service:</span><span>Rp ${oJasa.toLocaleString()}</span></div>
+                <div class="flex justify-between"><span>Sparepart (Grosir/Modal):</span><span>Rp ${catSum.Sparepart.toLocaleString()}</span></div>
+                <div class="flex justify-between"><span>Gaji:</span><span>Rp ${catSum.Gaji.toLocaleString()}</span></div>
+                <div class="flex justify-between"><span>Sewa:</span><span>Rp ${catSum.Sewa.toLocaleString()}</span></div>
+                <div class="flex justify-between"><span>Alat:</span><span>Rp ${catSum.Alat.toLocaleString()}</span></div>
+            </div>`;
+        document.getElementById('box-laporan').innerHTML = html;
+        document.getElementById('print-content-laporan').innerHTML = html;
+    }
+
+    function simpanBiaya() {
+        const t = document.getElementById('b-tgl').value, k = document.getElementById('b-kategori').value, n = document.getElementById('b-nama').value, j = parseFloat(document.getElementById('b-jumlah').value) || 0;
+        if(!n || j <= 0) return alert("Lengkapi data!");
+        db.pengeluaran.push({tgl:t, kategori:k, nama:n, jumlah:j});
+        localStorage.setItem(KEY, JSON.stringify(db)); renderBiaya();
+    }
+
+    function renderBiaya() {
+        document.getElementById('list-biaya').innerHTML = db.pengeluaran.slice().reverse().map(b => `<div class="flex justify-between border-b py-1"><span>[${b.kategori}] ${b.nama}</span><span class="font-bold text-red-600">Rp ${b.jumlah.toLocaleString()}</span></div>`).join('');
     }
 
     function renderAntrean() {
-        const list = document.getElementById('list-antrean'); list.innerHTML = "";
-        db.antrean.forEach((a, idx) => {
-            const div = document.createElement('div'); div.className = "card border-l-4 border-orange-500 p-2 text-xs";
-            div.innerHTML = `<div class="flex justify-between font-bold"><span>${a.tipe}</span><span>${a.tgl}</span></div><div class="text-lg font-black">${a.nopol}</div><div class="grid grid-cols-2 gap-2 mt-1"><button onclick="loadAntrean(${idx})" class="bg-blue-600 text-white py-1 rounded">PROSES</button><button onclick="hapusAntrean(${idx})" class="bg-red-500 text-white py-1 rounded">HAPUS</button></div>`;
-            list.appendChild(div);
-        });
+        document.getElementById('list-antrean').innerHTML = db.antrean.map((a, idx) => `
+            <div class="card border-l-4 border-orange-500 p-2">
+                <div class="flex justify-between text-[10px] font-bold"><span>${a.tipe}</span><span>${a.tgl}</span></div>
+                <div class="text-lg font-black">${a.nopol}</div>
+                <div class="grid grid-cols-2 gap-2 mt-2"><button onclick="loadAntrean(${idx})" class="bg-blue-600 text-white py-1 rounded text-xs uppercase font-bold">Proses</button><button onclick="db.antrean.splice(${idx},1); renderAntrean()" class="bg-red-500 text-white py-1 rounded text-xs">Hapus</button></div>
+            </div>`).join('');
     }
 
     function loadAntrean(idx) {
@@ -269,22 +316,35 @@
         a.items.forEach(i => addItemRow(i)); db.antrean.splice(idx, 1); showView('nota', document.querySelectorAll('.nav-btn')[0]);
     }
 
-    function hapusAntrean(idx) { if(confirm("Hapus?")) { db.antrean.splice(idx, 1); localStorage.setItem(KEY, JSON.stringify(db)); renderAntrean(); } }
-
     function showView(v, el) {
         document.querySelectorAll('.view').forEach(x => x.classList.add('hidden')); document.getElementById('menu-' + v).classList.remove('hidden');
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); el.classList.add('active');
         if(v==='biaya') renderBiaya(); if(v==='riwayat') renderRiwayat(); if(v==='laporan') renderLaporan(); if(v==='antrean') renderAntrean();
     }
 
+    function importCSV(e) {
+        const file = e.target.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const lines = ev.target.result.split('\n');
+            lines.slice(1).forEach(line => {
+                if (!line.trim()) return;
+                const c = line.split(',');
+                db.transaksi.push({ tgl: c[0], noTrx: c[1], nopol: c[2], km: c[3], merk: c[4], nama: c[5], uraian: c[6], sparepart: c[7], harga: parseFloat(c[8])||0, qty: parseFloat(c[9])||0, jumlah: parseFloat(c[10])||0, catatan: "Import 2021" });
+            });
+            localStorage.setItem(KEY, JSON.stringify(db)); alert("Berhasil Import!"); location.reload();
+        };
+        reader.readAsText(file);
+    }
+
     function saveSettings() {
         db.settings = { nama: document.getElementById('s-nama').value.toUpperCase(), alamat: document.getElementById('s-alamat').value, hp: document.getElementById('s-hp').value, owner: document.getElementById('s-owner').value, rek: document.getElementById('s-rek').value, prefix: document.getElementById('s-prefix').value, nextNo: parseInt(document.getElementById('s-next-no').value) || 1, gsheet: document.getElementById('s-gsheet').value };
         localStorage.setItem(KEY, JSON.stringify(db)); location.reload();
     }
-    
-    function resetData() { if(confirm("Hapus Permanen SEMUA data transaksi & biaya?")) { localStorage.clear(); location.reload(); } }
-    function exportData() { const b = new Blob([JSON.stringify(db)], {type: "application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `backup_bengkel.json`; a.click(); }
+
+    function exportData() { const b = new Blob([JSON.stringify(db)], {type: "application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `backup.json`; a.click(); }
     function importData(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = (ev) => { db = JSON.parse(ev.target.result); localStorage.setItem(KEY, JSON.stringify(db)); location.reload(); }; r.readAsText(f); }
+    function resetData() { if(confirm("Hapus Permanen?")) { localStorage.clear(); location.reload(); } }
 
     init();
 </script>
